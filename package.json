@@ -6,6 +6,10 @@
     "build": "tsc",
     "start": "npm run build && node ./dist/app.js"
   },
+  "engines": {
+    "node": "14.18.x",
+    "npm": "7.17.x"
+  },
   "dependencies": {
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
