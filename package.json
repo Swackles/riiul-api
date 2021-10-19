@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "npm run build && node ./dist/app.js",
-    "test": "jest"
+    "migrations": "node-pg-migrate -m ./dist/migrations up",
+    "start": "node ./dist/app.js",
+    "test": "jest",
+    "migrate": "node-pg-migrate -m ./src/migrations -j ts"
   },
   "engines": {
     "node": "14.18.x",
@@ -16,7 +18,9 @@
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "http-errors": "^1.6.3",
-    "morgan": "~1.9.1"
+    "morgan": "~1.9.1",
+    "node-pg-migrate": "^6.0.0",
+    "pg": "^8.7.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.8",
@@ -39,9 +43,12 @@
     "typescript": "^4.4.2"
   },
   "jest": {
+    "collectCoverage": true,
     "testRegex": "/__tests__/.*.tests.ts?$",
     "collectCoverageFrom": [
-      "src/**/*.ts"
+      "src/**/*.ts",
+      "!src/**/index.ts",
+      "!src/**/*.d.ts"
     ]
   }
 }
