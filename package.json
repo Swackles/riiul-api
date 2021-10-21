@@ -47,8 +47,10 @@
     "testRegex": "/__tests__/.*.tests.ts?$",
     "collectCoverageFrom": [
       "src/**/*.ts",
+      "!src/app.ts",
       "!src/**/index.ts",
-      "!src/**/*.d.ts"
+      "!src/**/*.d.ts",
+      "!src/migrations/*.ts"
     ]
   }
 }
