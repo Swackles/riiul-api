@@ -63,3 +63,4 @@ This project uses few environment variables described below
 | NODE_ENV | development, production, test | development | Used to define in what environment the application is running
 | PORT | number | 8080 | Used to set the PORT of the application, defaults to 8080
 | DATABASE_URL | string | undefined | This is used to connect to the database
+| JWT_TOKEN | string | undefined | This is used to sign a JWT token

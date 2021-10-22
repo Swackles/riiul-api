@@ -1,6 +1,6 @@
-import BaseModal from './BaseModal'
+import BaseType from './BaseType'
 
-type User = BaseModal & {
+type User = BaseType & {
 	name: string
 	email: string
 	password: string
