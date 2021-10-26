@@ -1,7 +1,7 @@
-type BaseModal = {
+type BaseType = {
 	id: number
 	created_at: Date
 	updated_at: Date
 }
 
-export default BaseModal
+export default BaseType

@@ -31,7 +31,7 @@ To run tests, use the `npm run test` command.
 
 #### How to add tests
 
-Tests are added into the same directory as the file that is being tested. For jest to pick up tests, they must be added inside a `__tests__` folder and end with `.tests.ts`
+Tests are added into the `test` directory with same path as the file that is being tested. Tests also must end with `.test.ts` extension.
 
 ### Build & Run
 
@@ -63,3 +63,4 @@ This project uses few environment variables described below
 | NODE_ENV | development, production, test | development | Used to define in what environment the application is running
 | PORT | number | 8080 | Used to set the PORT of the application, defaults to 8080
 | DATABASE_URL | string | undefined | This is used to connect to the database
+| JWT_TOKEN | string | undefined | This is used to sign a JWT token
