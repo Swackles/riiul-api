@@ -49,7 +49,7 @@
   },
   "jest": {
     "collectCoverage": true,
-    "testRegex": "/__tests__/.*.tests.ts?$",
+    "testRegex": "/test/.*/.*.test.ts?$",
     "collectCoverageFrom": [
       "src/**/*.ts",
       "!src/app.ts",

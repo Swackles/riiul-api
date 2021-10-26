@@ -1,8 +1,8 @@
-import { query } from '../databaseService'
-import {findUserWithEmail} from '../usersService'
+import { query } from '../../../src/database/services/databaseService'
+import {findUserWithEmail} from '../../../src/database/services/usersService'
 
 describe('findUserWithEmail', () => {
-	const data = ['TEST_NAME', 'TEST_EMAIL', 'TEST_PASSWORD']
+	const data = ['USER_SERVICE_TEST_NAME', 'USER_SERVICE_TEST_EMAIL', 'TEST_PASSWORD']
 	beforeAll(async () => {
 		await query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3)', data)
 	})
