@@ -1,7 +1,7 @@
 import request from 'supertest'
-import app from '../../../src/app'
+import app from '../../src/app'
 import bcrypt from 'bcrypt'
-import {query} from '../../../src/database/services/databaseService'
+import {query} from '../../src/database/services/databaseService'
 
 describe('login', () => {
 	const data = ['TEST_NAME', 'AUTH_CONTROLLER_TEST_EMAIL', bcrypt.hashSync('TEST_PASSWORD', 10)]

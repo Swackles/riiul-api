@@ -1,4 +1,4 @@
-import { usersService } from '../../database'
+import { usersService } from '../database'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import AuthenticateUserInfo from '../types/AuthenticateuserInfo'

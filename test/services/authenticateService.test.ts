@@ -1,5 +1,5 @@
-import {query} from '../../../src/database/services/databaseService'
-import {login} from '../../../src/authenticate/services/authenticateService'
+import {query} from '../../src/database/services/databaseService'
+import {login} from '../../src/services/authenticateService'
 import bcrypt from 'bcrypt'
 
 describe('login', () => {

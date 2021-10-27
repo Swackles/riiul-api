@@ -3,8 +3,8 @@ import express, { Request, Response } from 'express'
 import logger from 'morgan'
 import cookieParser from 'cookie-parser'
 import createError from 'http-errors'
-import authenticateController from './authenticate/controller/authenticateController'
-import healthController from './health/controllers/healthController'
+import authenticateController from './controller/authenticateController'
+import healthController from './controller/healthController'
 
 const app = express()
 

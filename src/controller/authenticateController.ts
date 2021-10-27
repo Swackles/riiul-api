@@ -3,7 +3,7 @@ import express from 'express'
 import {login} from '../services/authenticateService'
 import AuthenticateLoginBody from '../types/AuthenticateLoginBody'
 import AuthenticateLoginResponse from '../types/AuthenticateLoginResponse'
-import {Response} from '../../types/Response'
+import {Response} from '../types/Response'
 
 const router = express.Router()
 
