@@ -60,7 +60,8 @@
       "!src/**/index.ts",
       "!src/**/*.d.ts",
       "!src/migrations/*.ts",
-      "!src/**/types/*.ts"
+      "!src/**/types/*.ts",
+      "!src/**/enums/*.ts"
     ]
   }
 }
