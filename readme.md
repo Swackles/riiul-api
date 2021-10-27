@@ -64,3 +64,4 @@ This project uses few environment variables described below
 | PORT | number | 8080 | Used to set the PORT of the application, defaults to 8080
 | DATABASE_URL | string | undefined | This is used to connect to the database
 | JWT_TOKEN | string | undefined | This is used to sign a JWT token
+| SALT_ROUNDS | number | undefined | Used to generate the salt for password hashing

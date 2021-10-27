@@ -6,6 +6,7 @@ declare global {
 			NODE_ENV: 'development' | 'production' | 'test'
 			PORT?: string
 			JWT_TOKEN: string
+			SALT_ROUNDS: string
 		}
 	}
 }
