@@ -1,6 +1,7 @@
 import {query} from '../../src/database/services/databaseService'
-import {login} from '../../src/services/authenticateService'
+import {generateJwtToken, login, validateToken} from '../../src/services/authenticateService'
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
 describe('login', () => {
 	const data = ['TEST_NAME', 'AUTH_TEST_EMAIL', bcrypt.hashSync('TEST_PASSWORD', 10)]
@@ -33,5 +34,54 @@ describe('login', () => {
 		expect(login('TEST_EMAIL', 'TEST'))
 			.rejects
 			.toEqual({ status: 401 })
+	})
+})
+
+describe('validateToken', () => {
+	it('should return id inside the payload', () => {
+		expect(validateToken(generateJwtToken(9))).toBe(9)
+	})
+
+	it('should throw an error with 401 status when token is expired', () => {
+		const token = jwt.sign({ id: 9 }, process.env.JWT_TOKEN, { expiresIn: -20000 })
+		try {
+			validateToken(token)
+		} catch(err) {
+			expect(err.status).toBe(401)
+			expect(err.message).toBe('jwt expired')
+		}
+	})
+
+	it('should throw an error with 401 status when token has invalid signature', () => {
+		const token = jwt.sign({ id: 9 }, 'random key')
+		try {
+			validateToken(token)
+		} catch(err) {
+			expect(err.status).toBe(401)
+			expect(err.message).toBe('invalid signature')
+		}
+	})
+
+	it('should throw an error with 401 status when token is malformed', () => {
+		try {
+			validateToken('random token')
+		} catch(err) {
+			expect(err.status).toBe(401)
+			expect(err.message).toBe('jwt malformed')
+		}
+	})
+
+	test.each`
+	token
+	${undefined}
+	${null}
+	${''}
+	`('throws error with 401 status when token is not provided("$token")', ({ token }) => {
+		try {
+			validateToken(token)
+		} catch(err) {
+			expect(err.status).toBe(401)
+			expect(err.message).toBe('jwt must be provided')
+		}
 	})
 })
