@@ -14,6 +14,7 @@
     "npm": "7.17.x"
   },
   "dependencies": {
+    "@types/luxon": "^2.0.5",
     "bcrypt": "^5.0.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
@@ -21,6 +22,7 @@
     "express-async-handler": "^1.2.0",
     "http-errors": "^1.6.3",
     "jsonwebtoken": "^8.5.1",
+    "luxon": "^2.0.2",
     "morgan": "~1.9.1",
     "node-pg-migrate": "^6.0.0",
     "pg": "^8.7.1"
@@ -55,7 +57,8 @@
       "!src/app.ts",
       "!src/**/index.ts",
       "!src/**/*.d.ts",
-      "!src/migrations/*.ts"
+      "!src/migrations/*.ts",
+      "!src/**/types/*.ts"
     ]
   }
 }
