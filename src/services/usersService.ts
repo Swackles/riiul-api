@@ -18,3 +18,7 @@ export async function addUser(newUser: UsersPostBody): Promise<User> {
 		throw err
 	}
 }
+
+export async function updateUser(id: number, user: UsersPostBody): Promise<void> {
+	await usersDatabaseService.updateUser(id, user)
+}

@@ -4,6 +4,8 @@ import User from '../../types/User'
 import userMapper from '../mappers/userMapper'
 import UsersPostBody from '../../types/UsersPostBody'
 
+const UPDATEABLE_FIELDS = ['name', 'email', 'password']
+
 export async function findUserWithId(id: number): Promise<User | null> {
 	const res = await query<UserDatabaseType>('SELECT * FROM users WHERE id = $1', [id])
 
@@ -23,8 +25,25 @@ export async function saveUser(user: UsersPostBody): Promise<User> {
 	return  userMapper(res.rows[0])
 }
 
+export async function updateUser(id: number, user: UsersPostBody): Promise<User> {
+	const values: Array<string | number> = [id, new Date().toISOString()]
+	const fields = []
+
+	for (const [key, value] of Object.entries(user)) {
+		if (!UPDATEABLE_FIELDS.includes(key)) continue
+
+		values.push(value)
+		fields.push(`${key} = $${values.length}`)
+	}
+
+	const res = await query<UserDatabaseType>(`UPDATE users SET ${fields.join(', ')}, updated_at = $2 WHERE id = $1 RETURNING *`, values)
+
+	return userMapper(res.rows[0])
+}
+
 export default {
 	findUserWithId,
 	findUserWithEmail,
-	saveUser
+	saveUser,
+	updateUser
 }
