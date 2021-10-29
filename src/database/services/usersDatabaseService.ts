@@ -44,5 +44,6 @@ export async function updateUser(id: number, user: UsersPostBody): Promise<User>
 export default {
 	findUserWithId,
 	findUserWithEmail,
-	saveUser
+	saveUser,
+	updateUser
 }

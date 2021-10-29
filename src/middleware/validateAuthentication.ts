@@ -3,7 +3,7 @@ import asyncHandler from 'express-async-handler'
 import {validateToken} from '../services/authenticateService'
 import {findUserWithId} from '../database/services/usersDatabaseService'
 
-async function validateAuthentication(req: Request, res: Response, next: NextFunction) {
+async function validateAuthentication(req: Request<never>, res: Response, next: NextFunction) {
 	res.locals.user = await findUserWithId(validateToken(req.headers.authorization))
 	next()
 }
