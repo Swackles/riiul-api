@@ -1,5 +1,7 @@
 import { query } from '../../../src/database/services/databaseService'
-import {findUserWithEmail, saveUser} from '../../../src/database/services/usersDatabaseService'
+import {findUserWithEmail, saveUser, updateUser} from '../../../src/database/services/usersDatabaseService'
+import faker from 'faker'
+import UserDatabaseType from '../../../src/database/types/UserDatabaseType'
 
 describe('findUserWithEmail', () => {
 	const data = ['USER_SERVICE_TEST_NAME', 'USER_SERVICE_TEST_EMAIL', 'TEST_PASSWORD']
@@ -49,5 +51,33 @@ describe('saveUser', () => {
 		expect(res.updatedAt).not.toBeNull()
 
 		await query('DELETE FROM users WHERE id = $1', [res.id])
+	})
+})
+
+describe('updateUser', () => {
+	const data = [faker.name.firstName(), 'USER_DATABASE_SERVICE_UNIQUE_EMAIL_1', faker.internet.password()]
+	let id: number
+
+	beforeEach(async () => {
+		const res = await query<UserDatabaseType>('INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *', data)
+		id = res.rows[0].id
+	})
+
+	afterEach(async () => {
+		await query('DELETE FROM users WHERE email = $1', [data[1]])
+	})
+
+	test.each`
+	field | value
+	${'name'} | ${{ name: 'new user' }}
+	${'name" and "password'} | ${{ name: 'new user', password: 'new password' }}
+	${'name" and not update "id'} | ${{ name: 'new user', id: 9999 }}
+	`('should updated database fields "$fields"', async ({ value }) => {
+		const res = await updateUser(id, value)
+
+		expect(res.updatedAt.toISO()).not.toBe(res.createdAt.toISO())
+		expect(res.name).toBe(value.name)
+		expect(res.password).toBe(value.password || data[2])
+		expect(res.id).toBe(id)
 	})
 })
