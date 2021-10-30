@@ -5,6 +5,24 @@ import {query} from '../../src/database/services/databaseService'
 import {generateJwtToken} from '../../src/services/authenticateService'
 import UserDatabaseType from '../../src/database/types/UserDatabaseType'
 
+describe('get', () => {
+	it('should return 200 response', async () => {
+		const response = await request(app)
+			.get('/users')
+			.set('Authorization', generateJwtToken(1))
+
+		expect(response.statusCode).toBe(200)
+		expect(response.body.users).not.toBeNull()
+	})
+
+	it('should respond with 401 error', async () => {
+		const response = await request(app)
+			.get('/users')
+
+		expect(response.statusCode).toBe(401)
+	})
+})
+
 describe('post', () => {
 	const body = {
 		name: faker.name.firstName(),
