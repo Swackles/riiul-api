@@ -32,3 +32,7 @@ export async function addUser(newUser: UsersPostBody): Promise<User> {
 export async function updateUser(id: number, user: UsersPostBody): Promise<void> {
 	await usersDatabaseService.updateUser(id, user)
 }
+
+export async function deleteUser(id: number): Promise<void> {
+	await usersDatabaseService.deleteUser(id)
+}

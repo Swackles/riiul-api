@@ -47,10 +47,15 @@ export async function updateUser(id: number, user: UsersPostBody): Promise<User>
 	return userMapper(res.rows[0])
 }
 
+export async function deleteUser(id: number): Promise<void> {
+	await query('DELETE FROM users WHERE id = $1', [id])
+}
+
 export default {
 	allUsers,
 	findUserWithId,
 	findUserWithEmail,
 	saveUser,
-	updateUser
+	updateUser,
+	deleteUser
 }
