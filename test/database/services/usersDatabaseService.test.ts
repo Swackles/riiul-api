@@ -1,5 +1,5 @@
 import { query } from '../../../src/database/services/databaseService'
-import {findUserWithEmail, saveUser, updateUser} from '../../../src/database/services/usersDatabaseService'
+import usersDatabaseService, {findUserWithEmail, saveUser, updateUser} from '../../../src/database/services/usersDatabaseService'
 import faker from 'faker'
 import UserDatabaseType from '../../../src/database/types/UserDatabaseType'
 
@@ -79,5 +79,23 @@ describe('updateUser', () => {
 		expect(res.name).toBe(value.name)
 		expect(res.password).toBe(value.password || data[2])
 		expect(res.id).toBe(id)
+	})
+})
+
+describe('delete', () => {
+	let id: number
+
+	beforeEach(async () => {
+		const res = await query<UserDatabaseType>('INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *',
+			[faker.name.firstName(), faker.internet.email(), faker.internet.password()])
+		id = res.rows[0].id
+	})
+
+	afterEach(async () => {
+		await query('DELETE FROM users WHERE id = $1', [id])
+	})
+
+	it('should delete the user', async () => {
+		expect(usersDatabaseService.deleteUser(id)).resolves
 	})
 })
