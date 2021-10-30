@@ -6,6 +6,12 @@ import UsersPostBody from '../../types/UsersPostBody'
 
 const UPDATEABLE_FIELDS = ['name', 'email', 'password']
 
+export async function allUsers(): Promise<User[]> {
+	const res = await query<UserDatabaseType>('SELECT * FROM users')
+
+	return res.rows.map(userMapper)
+}
+
 export async function findUserWithId(id: number): Promise<User | null> {
 	const res = await query<UserDatabaseType>('SELECT * FROM users WHERE id = $1', [id])
 
@@ -42,6 +48,7 @@ export async function updateUser(id: number, user: UsersPostBody): Promise<User>
 }
 
 export default {
+	allUsers,
 	findUserWithId,
 	findUserWithEmail,
 	saveUser,

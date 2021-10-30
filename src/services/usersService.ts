@@ -3,6 +3,16 @@ import bcrypt from 'bcrypt'
 import usersDatabaseService from '../database/services/usersDatabaseService'
 import User from '../types/User'
 import HttpErrorMessage from '../enums/HttpErrorMessage'
+import UserListResponse from '../types/UserListResponse'
+
+export async function getUsers(): Promise<UserListResponse[]> {
+	const users = await usersDatabaseService.allUsers()
+
+	return users.map(user => ({
+		id: user.id,
+		name: user.name
+	}))
+}
 
 export async function addUser(newUser: UsersPostBody): Promise<User> {
 	if (!(newUser.email && newUser.password && newUser.name)) throw { status: 400, message: HttpErrorMessage.EMPTY_FIELDS }

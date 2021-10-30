@@ -3,7 +3,7 @@ import pool from './poolService'
 
 export type ReturnType<T> = Promise<QueryResult<T>>
 
-export async function query<T>(query: string, params: (string|number)[], client: PoolClient = undefined): ReturnType<T> {
+export async function query<T>(query: string, params?: (string|number)[], client: PoolClient = undefined): ReturnType<T> {
 	const doesClientNotExist = !client
 	if(doesClientNotExist) client = await pool.connect()
 
