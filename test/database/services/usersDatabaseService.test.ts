@@ -11,6 +11,35 @@ describe('allUsers', () => {
 	})
 })
 
+describe('getUser', () => {
+	const data = [faker.name.firstName(), faker.internet.email(), faker.internet.password()]
+	let id: number
+
+	beforeEach(async () => {
+		const res = await query<UserDatabaseType>('INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *', data)
+		id = res.rows[0].id
+	})
+
+	afterEach(async () => {
+		await query('DELETE FROM users WHERE email = $1', [data[1]])
+	})
+
+	it('should return a user', async () => {
+		const res = await  usersDatabaseService.getUser(id)
+
+		expect(res.id).toBe(id)
+		expect(res.name).toBe(data[0])
+		expect(res.email).toBe(data[1])
+		expect(res.password).toBe(data[2])
+	})
+
+	it('should return null', async () => {
+		const res = await  usersDatabaseService.getUser(-1)
+
+		expect(res).toBeNull()
+	})
+})
+
 describe('findUserWithEmail', () => {
 	const data = ['USER_SERVICE_TEST_NAME', 'USER_SERVICE_TEST_EMAIL', 'TEST_PASSWORD']
 	beforeAll(async () => {
