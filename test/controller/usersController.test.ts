@@ -42,7 +42,7 @@ describe('find one user', () => {
 			.set('Authorization', generateJwtToken(1))
 
 		expect(response.statusCode).toBe(200)
-		expect(response.body.user).toStrictEqual({
+		expect(response.body).toStrictEqual({
 			id,
 			name: data[0],
 			email: data[1]
@@ -79,11 +79,7 @@ describe('post', () => {
 			.send(body)
 
 		expect(response.statusCode).toBe(200)
-		expect(JSON.parse(response.text)).toStrictEqual({
-			success: true,
-			message: 'Kasutaja loodud'
-		})
-
+		expect(response.body).toStrictEqual({})
 	})
 
 	afterAll(async () => {
@@ -115,10 +111,7 @@ describe('update', () => {
 			.send(body)
 
 		expect(response.statusCode).toBe(200)
-		expect(JSON.parse(response.text)).toStrictEqual({
-			success: true,
-			message: 'Kasutaja uuendatud'
-		})
+		expect(response.body).toStrictEqual({})
 	})
 
 	it('should respond with 401 error', async () => {
@@ -149,9 +142,7 @@ describe('delete', () => {
 			.set('Authorization', generateJwtToken(1))
 
 		expect(response.statusCode).toBe(200)
-		expect(JSON.parse(response.text)).toStrictEqual({
-			success: true
-		})
+		expect(response.body).toStrictEqual({})
 	})
 
 	it('should respond with 401 error', async () => {

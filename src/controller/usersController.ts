@@ -1,6 +1,5 @@
 import asyncHandler from 'express-async-handler'
 import express from 'express'
-import {Response} from '../types/Response'
 import validateAuthentication from '../middleware/validateAuthentication'
 import UsersPostBody from '../types/UsersPostBody'
 import {addUser, deleteUser, getUser, getUsers, updateUser} from '../services/usersService'
@@ -9,27 +8,27 @@ import UserResponse from '../types/UserResponse'
 
 const router = express.Router()
 
-router.get<unknown, Response<{users: UserListResponse[]}>>('/', validateAuthentication, asyncHandler(async (req, res) => {
-	res.status(200).send({ success: true, users: await getUsers() })
+router.get<unknown, UserListResponse[]>('/', validateAuthentication, asyncHandler(async (req, res) => {
+	res.status(200).send(await getUsers())
 }))
 
-router.get<{ id: number }, Response<{user: UserResponse}>>('/:id([0-9]+)', validateAuthentication, asyncHandler(async (req, res) => {
-	res.status(200).send({ success: true, user: await getUser(req.params.id) })
+router.get<{ id: number }, UserResponse>('/:id([0-9]+)', validateAuthentication, asyncHandler(async (req, res) => {
+	res.status(200).send(await getUser(req.params.id))
 }))
 
-router.post<unknown, Response<{ message: string }>, UsersPostBody>('/', validateAuthentication, asyncHandler(async (req, res) => {
+router.post<unknown, never, UsersPostBody>('/', validateAuthentication, asyncHandler(async (req, res) => {
 	await addUser(req.body)
-	res.status(200).send({ success: true, message: 'Kasutaja loodud' })
+	res.status(200).send()
 }))
 
-router.put<{id: number }, Response<{ message: string }>, UsersPostBody>('/:id([0-9]+)', validateAuthentication, asyncHandler(async (req, res) => {
+router.put<{id: number }, never, UsersPostBody>('/:id([0-9]+)', validateAuthentication, asyncHandler(async (req, res) => {
 	await updateUser(req.params.id, req.body)
-	res.status(200).send({ success: true, message: 'Kasutaja uuendatud' })
+	res.status(200).send()
 }))
 
-router.delete<{id: number}, Response<unknown>>('/:id([0-9]+)', validateAuthentication, asyncHandler(async (req, res) => {
+router.delete<{id: number}, never>('/:id([0-9]+)', validateAuthentication, asyncHandler(async (req, res) => {
 	await deleteUser(req.params.id)
-	res.status(200).send({ success: true })
+	res.status(200).send()
 }))
 
 export default router

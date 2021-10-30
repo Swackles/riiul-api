@@ -1,7 +1,6 @@
-import AuthenticateUserInfo from './AuthenticateuserInfo'
-
 type AuthenticateLoginResponse = {
-	user: AuthenticateUserInfo
+	token: string
+	username: string
 }
 
 export default AuthenticateLoginResponse
