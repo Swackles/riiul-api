@@ -3,9 +3,14 @@ import express from 'express'
 import {Response} from '../types/Response'
 import validateAuthentication from '../middleware/validateAuthentication'
 import UsersPostBody from '../types/UsersPostBody'
-import {addUser, deleteUser, updateUser} from '../services/usersService'
+import {addUser, deleteUser, getUsers, updateUser} from '../services/usersService'
+import UserListResponse from '../types/UserListResponse'
 
 const router = express.Router()
+
+router.get<unknown, Response<{users: UserListResponse[]}>>('/', validateAuthentication, asyncHandler(async (req, res) => {
+	res.status(200).send({ success: true, users: await getUsers() })
+}))
 
 router.post<unknown, Response<{ message: string }>, UsersPostBody>('/', validateAuthentication, asyncHandler(async (req, res) => {
 	await addUser(req.body)

@@ -3,6 +3,14 @@ import usersDatabaseService, {findUserWithEmail, saveUser, updateUser} from '../
 import faker from 'faker'
 import UserDatabaseType from '../../../src/database/types/UserDatabaseType'
 
+describe('allUsers', () => {
+	it('should return all users', async () => {
+		const res = await usersDatabaseService.allUsers()
+
+		expect(res).not.toBeNull()
+	})
+})
+
 describe('findUserWithEmail', () => {
 	const data = ['USER_SERVICE_TEST_NAME', 'USER_SERVICE_TEST_EMAIL', 'TEST_PASSWORD']
 	beforeAll(async () => {
