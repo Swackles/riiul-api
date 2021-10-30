@@ -3,13 +3,18 @@ import express from 'express'
 import {Response} from '../types/Response'
 import validateAuthentication from '../middleware/validateAuthentication'
 import UsersPostBody from '../types/UsersPostBody'
-import {addUser, deleteUser, getUsers, updateUser} from '../services/usersService'
+import {addUser, deleteUser, getUser, getUsers, updateUser} from '../services/usersService'
 import UserListResponse from '../types/UserListResponse'
+import UserResponse from '../types/UserResponse'
 
 const router = express.Router()
 
 router.get<unknown, Response<{users: UserListResponse[]}>>('/', validateAuthentication, asyncHandler(async (req, res) => {
 	res.status(200).send({ success: true, users: await getUsers() })
+}))
+
+router.get<{ id: number }, Response<{user: UserResponse}>>('/:id([0-9]+)', validateAuthentication, asyncHandler(async (req, res) => {
+	res.status(200).send({ success: true, user: await getUser(req.params.id) })
 }))
 
 router.post<unknown, Response<{ message: string }>, UsersPostBody>('/', validateAuthentication, asyncHandler(async (req, res) => {

@@ -5,7 +5,7 @@ import {query} from '../../src/database/services/databaseService'
 import {generateJwtToken} from '../../src/services/authenticateService'
 import UserDatabaseType from '../../src/database/types/UserDatabaseType'
 
-describe('get', () => {
+describe('get all users', () => {
 	it('should return 200 response', async () => {
 		const response = await request(app)
 			.get('/users')
@@ -13,6 +13,48 @@ describe('get', () => {
 
 		expect(response.statusCode).toBe(200)
 		expect(response.body.users).not.toBeNull()
+	})
+
+	it('should respond with 401 error', async () => {
+		const response = await request(app)
+			.get('/users')
+
+		expect(response.statusCode).toBe(401)
+	})
+})
+
+describe('find one user', () => {
+	const data = [faker.name.firstName(), faker.internet.email(), faker.internet.password()]
+	let id: number
+
+	beforeAll(async () => {
+		const res = await query<UserDatabaseType>('INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *', data)
+		id = res.rows[0].id
+	})
+
+	afterAll(async () => {
+		await query('DELETE FROM users WHERE id = $1', [id])
+	})
+
+	it('should return 200 response', async () => {
+		const response = await request(app)
+			.get('/users/' + id)
+			.set('Authorization', generateJwtToken(1))
+
+		expect(response.statusCode).toBe(200)
+		expect(response.body.user).toStrictEqual({
+			id,
+			name: data[0],
+			email: data[1]
+		})
+	})
+
+	it('should respond with 404 error', async () => {
+		const response = await request(app)
+			.get('/users/-1')
+			.set('Authorization', generateJwtToken(1))
+
+		expect(response.statusCode).toBe(404)
 	})
 
 	it('should respond with 401 error', async () => {
