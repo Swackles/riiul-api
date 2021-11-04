@@ -25,12 +25,8 @@ describe('login', () => {
 
 		expect(response.statusCode).toBe(200)
 
-		expect(response.body).not.toBeNull()
-		expect(response.body.success).toBe(true)
-
-		expect(response.body.user).not.toBeNull()
-		expect(response.body.user.token).not.toBeNull()
-		expect(response.body.user.username).toBe('TEST_NAME')
+		expect(response.body.token).not.toBeNull()
+		expect(response.body.username).toBe('TEST_NAME')
 	})
 
 	it('should return error when email is incorrect', async () => {

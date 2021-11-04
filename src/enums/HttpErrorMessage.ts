@@ -1,8 +1,8 @@
 enum HttpErrorMessage {
-	EMPTY_FIELDS = 'Nõutavad väljad ei ole täidetud',
-	EMAIL_EXISTS = 'Sama emailiga kasutaja juba eksisteerib!',
-	INTERNAL_SERVER_ERROR = 'Midagi läks valesti, proovi hiljem uuesti',
-	USER_NOT_FOUND = 'Kasutajat ei eksisteeri'
+	EMPTY_FIELDS = 'EMPTY_FIELDS',
+	EMAIL_EXISTS = 'EMAIL_EXISTS',
+	INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
+	USER_NOT_FOUND = 'USER_NOT_FOUND'
 }
 
 export default HttpErrorMessage

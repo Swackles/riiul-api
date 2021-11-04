@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import AuthenticateUserInfo from '../types/AuthenticateuserInfo'
 import usersDatabaseService from '../database/services/usersDatabaseService'
+import AuthenticateLoginResponse from '../types/AuthenticateLoginResponse'
 
-export async function login(email: string, password: string): Promise<AuthenticateUserInfo> {
+export async function login(email: string, password: string): Promise<AuthenticateLoginResponse> {
 	const res = await usersDatabaseService.findUserWithEmail(email)
 	if (!res || !bcrypt.compareSync(password, res.password)) throw { status: 401 }
 
