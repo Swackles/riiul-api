@@ -7,8 +7,11 @@ import authenticateController from './controller/authenticateController'
 import healthController from './controller/healthController'
 import usersController from './controller/usersController'
 import HttpErrorMessage from './enums/HttpErrorMessage'
+import cors from 'cors'
 
 const app = express()
+
+app.use(cors())
 
 app.use(logger('dev'))
 app.use(express.json())
