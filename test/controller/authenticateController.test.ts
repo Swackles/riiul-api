@@ -20,7 +20,7 @@ describe('login', () => {
 		}
 
 		const response = await request(app)
-			.get('/authenticate/login')
+			.post('/authenticate/login')
 			.send(body)
 
 		expect(response.statusCode).toBe(200)
@@ -40,7 +40,7 @@ describe('login', () => {
 		}
 
 		const response = await request(app)
-			.get('/authenticate/login')
+			.post('/authenticate/login')
 			.send(body)
 
 		expect(response.statusCode).toBe(401)
@@ -53,7 +53,7 @@ describe('login', () => {
 		}
 
 		const response = await request(app)
-			.get('/authenticate/login')
+			.post('/authenticate/login')
 			.send(body)
 
 		expect(response.statusCode).toBe(401)
