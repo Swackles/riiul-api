@@ -42,6 +42,7 @@ export async function addUser(newUser: UsersPostBody): Promise<User> {
 }
 
 export async function updateUser(id: number, user: UsersPostBody): Promise<void> {
+	if (user.password) user.password = await bcrypt.hash(user.password, parseInt(process.env.SALT_ROUNDS))
 	await usersDatabaseService.updateUser(id, user)
 }
 
