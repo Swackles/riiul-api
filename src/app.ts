@@ -8,6 +8,7 @@ import healthController from './controller/healthController'
 import usersController from './controller/usersController'
 import HttpErrorMessage from './enums/HttpErrorMessage'
 import cors from 'cors'
+import specialitiesController from './controller/specialitiesController'
 
 const app = express()
 
@@ -21,6 +22,7 @@ app.use(cookieParser())
 app.use('/health', healthController)
 app.use('/users', usersController)
 app.use('/authenticate', authenticateController)
+app.use('/specialities', specialitiesController)
 
 app.use(function (req, res, next) {
 	next(createError(404))
