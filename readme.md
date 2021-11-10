@@ -54,6 +54,8 @@ npm run migrations
 npm run start
 ````
 
+> File storage. The project stores files at root level in files folder, if the folder doesn't exist, it will create one.
+
 ## Environment variables
 
 This project uses few environment variables described below
