@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { query } from '../../../src/database/services/databaseService'
 import filesDatabaseService from '../../../src/database/services/filesDatabaseService'
 import faker from 'faker'
@@ -55,5 +56,31 @@ describe('save', () => {
 		expect(res.updatedAt).not.toBeNull()
 
 		await query('DELETE FROM files WHERE id = $1', [res.id])
+	})
+})
+
+describe('delete', () => {
+	const originalName = faker.random.word()
+	const data = [`${faker.datatype.uuid()}-${originalName}`, 'pdf', originalName]
+	let id: number
+
+	beforeEach(async () => {
+		const res = await query<FileDatabaseType>('INSERT INTO files (name, extension, original_name) VALUES ($1, $2, $3) RETURNING *', data)
+		id = res.rows[0].id
+	})
+
+	it('should delete the file', async () => {
+		expect(filesDatabaseService.deleteFile(id)).resolves
+			.toBeUndefined()
+			.then(async () => {
+				const res = await query('SELECT * FROM files WHERE id = $1', [id])
+
+				expect(res.rowCount).toBe(0)
+			})
+			.finally(async () => {
+				const res = await query<FileDatabaseType>('DELETE FROM files WHERE id = $1 RETURNING *', [id])
+
+				expect(res.rowCount).toBe(0)
+			})
 	})
 })

@@ -21,7 +21,12 @@ async function save(file: SaveFileType): Promise<File> {
 	return fileMapper(res.rows[0])
 }
 
+async function deleteFile(id: number): Promise<void> {
+	await query('DELETE FROM files WHERE id = $1', [id])
+}
+
 export default {
 	findWithNameAndExtension,
+	deleteFile,
 	save
 }
