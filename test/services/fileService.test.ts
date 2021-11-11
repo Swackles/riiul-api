@@ -1,13 +1,33 @@
-import {saveFile} from '../../src/services/filesService'
+import {getFile, saveFile} from '../../src/services/filesService'
 import fs from 'fs'
 import path from 'path'
 import filesDatabaseService from '../../src/database/services/filesDatabaseService'
 import {query} from '../../src/database/services/databaseService'
 
 const IMAGE_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+const dir = path.join(__dirname, '../../files/')
+
+describe('getFile', () => {
+	it('should return the image buffer', async () => {
+		const data = Buffer.allocUnsafe(1)
+
+		jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
+		jest.spyOn(fs, 'readFileSync').mockImplementation(() => data)
+
+		await expect(getFile('get-file-return.png')).resolves
+			.toEqual(data)
+	})
+
+	it('should throw 404 error', async () => {
+		jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
+		jest.spyOn(fs, 'readFileSync').mockImplementation()
+
+		await expect(getFile('get-file-throw.png')).rejects
+			.toEqual({ status: 404, message: 'File not found' } as never)
+	})
+})
 
 describe('saveFile', () => {
-	const dir = path.join(__dirname, '../../files/')
 	let data: string[] = []
 
 	afterAll(async () => {
@@ -15,47 +35,43 @@ describe('saveFile', () => {
 	})
 
 	it('should store the file on the disk', async () => {
-		const spy = jest.spyOn(fs, 'writeFileSync').mockImplementation()
-		fs.existsSync = jest.fn().mockReturnValue(true)
+		jest.spyOn(fs, 'writeFileSync').mockImplementation()
+		jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
 
-		const res = await saveFile('test-file.png', IMAGE_BASE64)
+		const res = await saveFile('save-file-store.png', IMAGE_BASE64)
 		data = [res.extension, res.name]
 		expect(res).not.toBeNull()
-		expect(res.originalName).toBe('test-file')
+		expect(res.originalName).toBe('save-file-store')
 		expect(res.extension).toBe('png')
-		expect(res.name).toMatch(/[0-9]{13}-test-file/)
+		expect(res.name).toMatch(/[0-9]{13}-save-file-store/)
 
 		expect(res.createdAt).not.toBeNull()
 		expect(res.updatedAt).not.toBeNull()
-
-		expect(spy).toHaveBeenCalledWith(path.join(dir, `${res.name}.${res.extension}`), IMAGE_BASE64 , 'base64')
 
 		await expect(filesDatabaseService.findWithNameAndExtension(res.name, res.extension)).resolves.toEqual(res)
 	})
 
 	it('should create the path', async () => {
-		jest.spyOn(fs, 'writeFileSync').mockImplementation()
 		jest.spyOn(filesDatabaseService, 'save').mockImplementation()
+		jest.spyOn(fs, 'writeFileSync').mockImplementation()
+		const spyMkdirSync = jest.spyOn(fs, 'mkdirSync').mockImplementation()
+		const spyExistsSync = jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
 
-		fs.existsSync = jest.fn().mockReturnValue(false)
-		fs.mkdirSync = jest.fn().mockImplementation()
+		await saveFile('save-file-create.png', IMAGE_BASE64)
 
-		await saveFile('test-file.png', IMAGE_BASE64)
-
-		expect(fs.existsSync).toHaveBeenCalledWith(dir)
-		expect(fs.mkdirSync).toHaveBeenCalledWith(dir, { recursive: true })
+		expect(spyExistsSync).toHaveBeenCalledWith(dir)
+		expect(spyMkdirSync).toHaveBeenCalledWith(dir, { recursive: true })
 	})
 
 	it('should not create the path', async () => {
-		jest.spyOn(fs, 'writeFileSync').mockImplementation()
 		jest.spyOn(filesDatabaseService, 'save').mockImplementation()
+		jest.spyOn(fs, 'writeFileSync').mockImplementation()
+		const spyMkdirSync = jest.spyOn(fs, 'mkdirSync').mockImplementation()
+		const spyExistsSync = jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
 
-		fs.existsSync = jest.fn().mockReturnValue(true)
-		fs.mkdirSync = jest.fn().mockImplementation()
+		await saveFile('save-file-create-not.png', IMAGE_BASE64)
 
-		await saveFile('test-file.png', IMAGE_BASE64)
-
-		expect(fs.existsSync).toHaveBeenCalledWith(dir)
-		expect(fs.mkdirSync).not.toHaveBeenCalled()
+		expect(spyExistsSync).toHaveBeenCalledWith(dir)
+		expect(spyMkdirSync).not.toHaveBeenCalledWith('save-file-create-not.png', { recursive: true })
 	})
 })
