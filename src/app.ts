@@ -9,6 +9,7 @@ import usersController from './controller/usersController'
 import HttpErrorMessage from './enums/HttpErrorMessage'
 import cors from 'cors'
 import specialitiesController from './controller/specialitiesController'
+import filesController from './controller/filesController'
 
 const app = express()
 
@@ -19,10 +20,11 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
-app.use('/health', healthController)
-app.use('/users', usersController)
 app.use('/authenticate', authenticateController)
+app.use('/files', filesController)
+app.use('/health', healthController)
 app.use('/specialities', specialitiesController)
+app.use('/users', usersController)
 
 app.use(function (req, res, next) {
 	next(createError(404))
