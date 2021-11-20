@@ -10,7 +10,14 @@ describe('findWithNameAndExtension', () => {
 	let id: number
 
 	beforeEach(async () => {
-		const res = await query<FileDatabaseType>('INSERT INTO files (name, extension, original_name) VALUES ($1, $2, $3) RETURNING *', data)
+		const newPortfolio = await query<{ id: number }>(
+            `INSERT INTO portfolios (subject_id, title, description, priority, active) VALUES
+				($1, $2, $3, $4, $5) RETURNING id`,
+			[1, faker.random.word(), faker.random.word(), 'false', 'true']
+        )
+		const res = await query<FileDatabaseType>(
+			'INSERT INTO files (portfolio_id, portfolio_order, name, extension, original_name)' +
+			'VALUES ($1, $2, $3, $4, $5) RETURNING *', [newPortfolio.rows[0].id, 0, ...data])
 		id = res.rows[0].id
 	})
 
@@ -36,14 +43,29 @@ describe('findWithNameAndExtension', () => {
 
 describe('save', () => {
 	const uniqueKey = 'FILES_DATABASE_SERVICE_SAVE_'
+	let portfolioId: number
 	const file = {
 		name: uniqueKey + 'NAME',
 		extension: 'pdf',
-		originalName: uniqueKey + 'ORIGINAL_NAME'
+		originalName: uniqueKey + 'ORIGINAL_NAME',
 	}
 
+	beforeEach(async () => {
+		const res = await query<{ id: number }>(
+			`INSERT INTO portfolios (subject_id, title, description, priority, active) VALUES
+				($1, $2, $3, $4, $5) RETURNING id`,
+			[1, faker.random.word(), faker.random.word(), 'false', 'true']
+		)
+
+		portfolioId = res.rows[0].id
+	})
+
+	afterEach(async () => {
+		await query('DELETE FROM files WHERE id = $1', [portfolioId])
+	})
+
 	it('should return a newly created file', async () => {
-		const res = await filesDatabaseService.save(file)
+		const res = await filesDatabaseService.save({ ...file, portfolioId, portfolioOrder: faker.datatype.number() })
 
 		expect(res).not.toBeNull()
 
@@ -65,7 +87,14 @@ describe('delete', () => {
 	let id: number
 
 	beforeEach(async () => {
-		const res = await query<FileDatabaseType>('INSERT INTO files (name, extension, original_name) VALUES ($1, $2, $3) RETURNING *', data)
+		const newPortfolio = await query<{ id: number }>(
+			`INSERT INTO portfolios (subject_id, title, description, priority, active) VALUES
+				($1, $2, $3, $4, $5) RETURNING id`,
+			[1, faker.random.word(), faker.random.word(), 'false', 'true']
+		)
+		const res = await query<FileDatabaseType>(
+			'INSERT INTO files (portfolio_id, portfolio_order, name, extension, original_name)' +
+			'VALUES ($1, $2, $3, $4, $5) RETURNING *', [newPortfolio.rows[0].id, 0, ...data])
 		id = res.rows[0].id
 	})
 

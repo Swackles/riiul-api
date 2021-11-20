@@ -15,8 +15,8 @@ async function findWithNameAndExtension(name: string, extension: string): Promis
 
 async function save(file: SaveFileType): Promise<File> {
 	const res = await query<FileDatabaseType>(
-		'INSERT INTO files (name, extension, original_name) VALUES ($1, $2, $3) RETURNING *',
-		[file.name, file.extension, file.originalName])
+		'INSERT INTO files (name, extension, original_name, portfolio_id, portfolio_order) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+		[file.name, file.extension, file.originalName, file.portfolioId, file.portfolioOrder])
 
 	return fileMapper(res.rows[0])
 }

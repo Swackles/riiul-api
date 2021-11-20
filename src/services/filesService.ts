@@ -13,12 +13,14 @@ export async function getFile(name: string): Promise<Buffer> {
 	return fs.readFileSync(filePath)
 }
 
-export async function saveFile(filename: string, data: string): Promise<File> {
+export async function saveFile(filename: string, data: string, portfolio: { id: number, order: number }): Promise<File> {
 	const originalName = filename.split('.')[0]
 	const file = {
 		name: `${DateTime.now().toMillis()}-${originalName}`,
 		originalName,
 		extension: filename.split('.').pop(),
+		portfolioOrder: portfolio.order,
+		portfolioId: portfolio.id
 	}
 
 	if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
