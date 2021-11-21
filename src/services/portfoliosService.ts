@@ -21,3 +21,7 @@ export async function getPortfolios(user?: User): Promise<PortfolioListResponse[
 		files: files.filter(f => f.portfolioId === p.id).map(f => f.name),
 	}))
 }
+
+export async function deletePortfolio(id: number): Promise<void> {
+	await portfoliosDatabaseService.deletePortfolio(id)
+}

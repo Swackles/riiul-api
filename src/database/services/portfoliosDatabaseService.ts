@@ -15,7 +15,12 @@ async function allPortfoliosPublic(): Promise<Portfolio[]> {
 	return res.rows.map(portfolioMapper)
 }
 
+async function deletePortfolio(id: number): Promise<void> {
+	await query('DELETE FROM portfolios WHERE id = $1', [id])
+}
+
 export default {
 	allPortfolios,
-	allPortfoliosPublic
+	allPortfoliosPublic,
+	deletePortfolio
 }
