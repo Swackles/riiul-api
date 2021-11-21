@@ -66,3 +66,33 @@ describe('allPortfoliosPublic', () => {
 		expect(res[2].priority).toBeFalsy()
 	})
 })
+
+describe('savePortfolio', () => {
+	let id: number
+
+	afterAll(async () => {
+		await query('DELETE FROM portfolios WHERE id = $1', [id])
+	})
+
+	it('should return a newly created user', async () => {
+		const res = await portfoliosDatabaseService.savePortfolio({
+			subjectId: 0,
+			title: faker.random.word(),
+			description: faker.random.words(20),
+			tags: faker.random.word(),
+			authors: faker.internet.userName(),
+			priority: faker.datatype.boolean(),
+			active: faker.datatype.boolean(),
+			files: []
+		})
+
+		id = res.id
+
+		expect(res).not.toBeNull()
+
+		expect(res.id).not.toBeNull()
+		expect(res.createdAt).not.toBeNull()
+		expect(res.updatedAt).not.toBeNull()
+
+	})
+})
