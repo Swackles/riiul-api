@@ -71,6 +71,10 @@ describe('validateToken', () => {
 		}
 	})
 
+	it('should not throw an error when error is suppressed', () => {
+		expect(validateToken('random token', true)).toBe(null)
+	})
+
 	test.each`
 	token
 	${undefined}

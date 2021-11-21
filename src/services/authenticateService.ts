@@ -17,14 +17,15 @@ export function generateJwtToken(id: number): string {
 	return jwt.sign({ id }, process.env.JWT_TOKEN, { expiresIn: 60 * 60 })
 }
 
-export function validateToken(token: string): number {
+export function validateToken(token: string, suppressError = false): number | null {
 	let decoded: jwt.JwtPayload
 
 	try {
 		decoded = jwt.verify(token, process.env.JWT_TOKEN) as jwt.JwtPayload
 	} catch (err) {
-		throw {status: 401, message: err.message }
+		if (!suppressError)
+			throw {status: 401, message: err.message }
 	}
 
-	return decoded.id
+	return decoded?.id || null
 }
