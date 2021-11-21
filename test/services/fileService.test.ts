@@ -29,7 +29,6 @@ describe('getFile', () => {
 })
 
 describe('saveFile', () => {
-	let data: string[] = []
 	let id: number
 
 	beforeAll(async () => {
@@ -41,7 +40,6 @@ describe('saveFile', () => {
 	})
 
 	afterAll(async () => {
-		await query('DELETE FROM files WHERE extension = $1 AND name = $2', data)
 		await query('DELETE FROM portfolios WHERE id = $1', [id])
 	})
 
@@ -50,7 +48,7 @@ describe('saveFile', () => {
 		jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
 
 		const res = await saveFile('save-file-store.png', IMAGE_BASE64, { order: 0, id })
-		data = [res.extension, res.name]
+
 		expect(res).not.toBeNull()
 		expect(res.originalName).toBe('save-file-store')
 		expect(res.extension).toBe('png')

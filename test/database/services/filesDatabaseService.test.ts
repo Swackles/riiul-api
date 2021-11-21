@@ -48,11 +48,10 @@ describe('findWithNameAndExtension', () => {
 describe('findWithPortfoliosId', () => {
 	const originalName = [faker.random.word(), faker.random.word()]
 
-	let filesIds: number[]
 	let portfoliosIds: number[]
 
 	beforeAll(async () => {
-		const portfolios = [...new Array(2)].map((_, i) => ([
+		const portfolios = [...new Array(2)].map(() => ([
             1, faker.random.word(), faker.random.word(), 'false', 'true'
         ]))
 		const newPortfolio = await query<{ id: number }>(
@@ -63,17 +62,16 @@ describe('findWithPortfoliosId', () => {
 		)
 		portfoliosIds = newPortfolio.rows.map(({ id }) => id)
 
-		const res = await query<FileDatabaseType>(
+		await query<FileDatabaseType>(
 			'INSERT INTO files (portfolio_id, portfolio_order, name, extension, original_name)' +
 			'VALUES ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10) RETURNING *',
 			originalName.map((name, i) => [
 				portfoliosIds[i], 0, `${DateTime.now().toMillis()}-${name}`, 'pdf', name
 			]).flat())
-		filesIds = res.rows.map(({ id }) => id)
 	})
 
 	afterAll(async () => {
-		await query('DELETE FROM portfolios WHERE id = ANY($1::int[])', [filesIds])
+		await query('DELETE FROM portfolios WHERE id = ANY($1::int[])', [portfoliosIds])
 	})
 
 	test.each`
@@ -131,6 +129,7 @@ describe('delete', () => {
 	const originalName = faker.random.word()
 	const data = [`${faker.datatype.uuid()}-${originalName}`, 'pdf', originalName]
 	let id: number
+	let portfolioId: number
 
 	beforeEach(async () => {
 		const newPortfolio = await query<{ id: number }>(
@@ -138,10 +137,16 @@ describe('delete', () => {
 				($1, $2, $3, $4, $5) RETURNING id`,
 			[1, faker.random.word(), faker.random.word(), 'false', 'true']
 		)
+		portfolioId = newPortfolio.rows[0].id
+
 		const res = await query<FileDatabaseType>(
 			'INSERT INTO files (portfolio_id, portfolio_order, name, extension, original_name)' +
 			'VALUES ($1, $2, $3, $4, $5) RETURNING *', [newPortfolio.rows[0].id, 0, ...data])
 		id = res.rows[0].id
+	})
+
+	afterEach(async () => {
+		await query('DELETE FROM portfolios WHERE id = $1', [portfolioId])
 	})
 
 	it('should delete the file', async () => {

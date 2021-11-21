@@ -10,6 +10,7 @@ import HttpErrorMessage from './enums/HttpErrorMessage'
 import cors from 'cors'
 import specialitiesController from './controller/specialitiesController'
 import filesController from './controller/filesController'
+import portfoliosController from './controller/portfoliosController'
 
 const app = express()
 
@@ -25,6 +26,7 @@ app.use('/files', filesController)
 app.use('/health', healthController)
 app.use('/specialities', specialitiesController)
 app.use('/users', usersController)
+app.use('/portfolios', portfoliosController)
 
 app.use(function (req, res, next) {
 	next(createError(404))
