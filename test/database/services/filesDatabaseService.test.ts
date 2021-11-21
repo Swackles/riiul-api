@@ -3,26 +3,30 @@ import { query } from '../../../src/database/services/databaseService'
 import filesDatabaseService from '../../../src/database/services/filesDatabaseService'
 import faker from 'faker'
 import FileDatabaseType from '../../../src/database/types/FileDatabaseType'
+import {DateTime} from 'luxon'
 
 describe('findWithNameAndExtension', () => {
 	const originalName = faker.random.word()
 	const data = [`${faker.datatype.uuid()}-${originalName}`, 'pdf', originalName]
 	let id: number
+	let portfolioId: number
 
-	beforeEach(async () => {
+	beforeAll(async () => {
 		const newPortfolio = await query<{ id: number }>(
             `INSERT INTO portfolios (subject_id, title, description, priority, active) VALUES
 				($1, $2, $3, $4, $5) RETURNING id`,
 			[1, faker.random.word(), faker.random.word(), 'false', 'true']
         )
+		portfolioId = newPortfolio.rows[0].id
+
 		const res = await query<FileDatabaseType>(
 			'INSERT INTO files (portfolio_id, portfolio_order, name, extension, original_name)' +
-			'VALUES ($1, $2, $3, $4, $5) RETURNING *', [newPortfolio.rows[0].id, 0, ...data])
+			'VALUES ($1, $2, $3, $4, $5) RETURNING *', [portfolioId, 0, ...data])
 		id = res.rows[0].id
 	})
 
-	afterEach(async () => {
-		await query('DELETE FROM files WHERE id = $1', [id])
+	afterAll(async () => {
+		await query('DELETE FROM portfolios WHERE id = $1', [portfolioId])
 	})
 
 	it('should return a file', async () => {
@@ -39,6 +43,50 @@ describe('findWithNameAndExtension', () => {
 
 		expect(res).toBeNull()
 	})
+})
+
+describe('findWithPortfoliosId', () => {
+	const originalName = [faker.random.word(), faker.random.word()]
+
+	let filesIds: number[]
+	let portfoliosIds: number[]
+
+	beforeAll(async () => {
+		const portfolios = [...new Array(2)].map((_, i) => ([
+            1, faker.random.word(), faker.random.word(), 'false', 'true'
+        ]))
+		const newPortfolio = await query<{ id: number }>(
+			`INSERT INTO portfolios (subject_id, title, description, priority, active) VALUES
+				($1, $2, $3, $4, $5),
+				($6, $7, $8, $9, $10) RETURNING id`,
+			portfolios.flat()
+		)
+		portfoliosIds = newPortfolio.rows.map(({ id }) => id)
+
+		const res = await query<FileDatabaseType>(
+			'INSERT INTO files (portfolio_id, portfolio_order, name, extension, original_name)' +
+			'VALUES ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10) RETURNING *',
+			originalName.map((name, i) => [
+				portfoliosIds[i], 0, `${DateTime.now().toMillis()}-${name}`, 'pdf', name
+			]).flat())
+		filesIds = res.rows.map(({ id }) => id)
+	})
+
+	afterAll(async () => {
+		await query('DELETE FROM portfolios WHERE id = ANY($1::int[])', [filesIds])
+	})
+
+	test.each`
+		index | length
+		${[0]} | ${1}
+		${[0, 1]} | ${2}
+		${[]} | ${0}
+	`('should return $length files when searched with "$index" portfolio indexes', async ({ index, length}: { index: number[], length: number}) => {
+        const res = await filesDatabaseService.findWithPortfoliosId(index.map(i => portfoliosIds[i]))
+
+		expect(res).not.toBeNull()
+        expect(res.length).toBe(length)
+    })
 })
 
 describe('save', () => {
@@ -61,7 +109,7 @@ describe('save', () => {
 	})
 
 	afterEach(async () => {
-		await query('DELETE FROM files WHERE id = $1', [portfolioId])
+		await query('DELETE FROM portfolios WHERE id = $1', [portfolioId])
 	})
 
 	it('should return a newly created file', async () => {
@@ -76,8 +124,6 @@ describe('save', () => {
 		expect(res.id).not.toBeNull()
 		expect(res.createdAt).not.toBeNull()
 		expect(res.updatedAt).not.toBeNull()
-
-		await query('DELETE FROM files WHERE id = $1', [res.id])
 	})
 })
 

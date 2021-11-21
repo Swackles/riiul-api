@@ -10,7 +10,8 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
 			notNull: true
 		},
 		portfolio_id: {
-			type: 'text',
+			references: '"portfolios"',
+			type: 'integer',
 			notNull: true,
 			onDelete: 'CASCADE'
 		},

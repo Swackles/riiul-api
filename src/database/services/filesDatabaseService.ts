@@ -13,6 +13,15 @@ async function findWithNameAndExtension(name: string, extension: string): Promis
 	return fileMapper(res.rows[0])
 }
 
+async function findWithPortfoliosId(portfoliosId: number[]): Promise<File[]> {
+	const res = await query<FileDatabaseType>(
+		'SELECT * FROM files WHERE portfolio_id = ANY($1::int[]) ORDER BY portfolio_order asc',
+		[portfoliosId]
+	)
+
+	return res.rows.map(fileMapper)
+}
+
 async function save(file: SaveFileType): Promise<File> {
 	const res = await query<FileDatabaseType>(
 		'INSERT INTO files (name, extension, original_name, portfolio_id, portfolio_order) VALUES ($1, $2, $3, $4, $5) RETURNING *',
@@ -27,6 +36,7 @@ async function deleteFile(id: number): Promise<void> {
 
 export default {
 	findWithNameAndExtension,
+	findWithPortfoliosId,
 	deleteFile,
 	save
 }
