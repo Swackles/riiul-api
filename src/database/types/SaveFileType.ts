@@ -4,6 +4,7 @@ type SaveFileType = {
 	originalName: string
 	portfolioOrder: number
 	portfolioId: number
+	type: string
 }
 
 export default SaveFileType

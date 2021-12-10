@@ -7,6 +7,7 @@ type File = {
 	originalName: string
 	portfolioOrder: number
 	portfolioId: number
+	type: string
 	createdAt: DateTime
 	updatedAt: DateTime
 }

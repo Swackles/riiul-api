@@ -1,6 +1,6 @@
 import {DateTime} from 'luxon'
 
-type User = {
+type Portfolio = {
 	id: number
 	specialityId: number
 	title: string
@@ -11,6 +11,8 @@ type User = {
 	active: boolean
 	createdAt: DateTime
 	updatedAt: DateTime
+	videoLink: string
+	graduationYear: number
 }
 
-export default User
+export default Portfolio

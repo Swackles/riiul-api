@@ -6,6 +6,7 @@ type FileDatabaseType = BaseType & {
 	original_name: string
 	portfolio_order: number
 	portfolio_id: number
+	type: string
 }
 
 export default FileDatabaseType

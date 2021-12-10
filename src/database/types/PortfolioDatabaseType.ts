@@ -8,6 +8,8 @@ type PortfolioDatabaseType = BaseType & {
 	authors: string
 	priority: boolean
 	active: boolean
+	video_link: string
+	graduation_year: number
 }
 
 export default PortfolioDatabaseType

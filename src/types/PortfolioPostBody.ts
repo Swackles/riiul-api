@@ -1,9 +1,9 @@
-type Files = {
-	fileName: string
+export type Files = {
+	name: string
 	contents: string
 }
 
-type UsersPostBody = {
+type PortfolioPostBody = {
 	subjectId: number
 	title: string
 	description: string
@@ -11,7 +11,10 @@ type UsersPostBody = {
 	authors: string,
 	priority: boolean,
 	active: boolean,
-	files: Files[]
+	graduationYear?: number,
+	videLink?: string,
+	images: Files[]
+	files?: Files[]
 }
 
-export default UsersPostBody
+export default PortfolioPostBody

@@ -5,36 +5,103 @@ import User from '../types/User'
 import Portfolio from '../types/Portfolio'
 import PortfolioPostBody from '../types/PortfolioPostBody'
 import PortfolioResponse from '../types/PortfolioResponse'
-import {saveFile} from './filesService'
+import {deleteFile, saveFile, updateFileOrder} from './filesService'
+import PortfolioUpdateBody from '../types/PortfolioUpdateBody'
+import PortfolioUpdateFileType from '../enums/PortfolioUpdateFileType'
+import PortfolioListQuery from '../types/PortfolioListQuery'
+import File from '../types/File'
 
-export async function getPortfolios(user?: User): Promise<PortfolioListResponse[]> {
+export async function findPortfolio(id: number, user?: User): Promise<PortfolioResponse> {
+	let portfolio: Portfolio
+
+	if (user) {
+		portfolio = await portfoliosDatabaseService.findPortfolio(id)
+	} else {
+		portfolio = await portfoliosDatabaseService.findPortfolioPublic(id)
+	}
+
+	if (!portfolio) throw {status: 401, message: 'PORTFOLIO_NOT_FOUND' }
+	const filesAndImages = await filesDatabaseService.findWithPortfoliosId([portfolio.id])
+
+	function parseFile(file: File) {
+		return {
+			id: file.id,
+			name: file.name + '.' + file.extension,
+		}
+	}
+	return {
+		...portfolio,
+		files: filesAndImages.filter(f => f.type === 'PDF').map(parseFile),
+		images: filesAndImages.filter(f => f.type === 'IMG').map(parseFile),
+	}
+}
+
+export async function getPortfolios(user?: User, query?: PortfolioListQuery): Promise<PortfolioListResponse[]> {
 	let portfolios: Portfolio[]
 
 	if (user) {
-		portfolios = await portfoliosDatabaseService.allPortfolios()
+		portfolios = await portfoliosDatabaseService.allPortfolios(query)
 	} else {
-		portfolios = await portfoliosDatabaseService.allPortfoliosPublic()
+		portfolios = await portfoliosDatabaseService.allPortfoliosPublic(query)
 	}
-	const files = await filesDatabaseService.findWithPortfoliosId(portfolios.map(p => p.id))
 
-	return portfolios.map(p => ({
-		id: p.id,
-		title: p.title,
-		specialityId: p.specialityId,
-		files: files.filter(f => f.portfolioId === p.id).map(f => f.name),
-	}))
+	const images = await filesDatabaseService.findWithPortfoliosId(portfolios.map(p => p.id))
+
+	return portfolios.map(p => {
+		const data: PortfolioListResponse = {
+			id: p.id,
+			title: p.title,
+			specialityId: p.specialityId,
+			images: images.filter(f => f.portfolioId === p.id && f.extension !== 'pdf').map(f => f.name),
+		}
+		if (user) data.active = p.active
+
+		return data
+	})
 }
 
 export async function deletePortfolio(id: number): Promise<void> {
 	await portfoliosDatabaseService.deletePortfolio(id)
 }
 
-export async function addPortfolio(portfolio: PortfolioPostBody): Promise<PortfolioResponse> {
+export async function addPortfolio(portfolio: PortfolioPostBody): Promise<void> {
 	const newPortfolio = await portfoliosDatabaseService.savePortfolio(portfolio)
-	const files = await Promise.all(portfolio.files.map(async (f, i) => {
-		const file = await saveFile(f.fileName, f.contents, {id: newPortfolio.id, order: i})
-		return file.name
+
+	await Promise.all(portfolio.files.map(async (f, i) => {
+		await saveFile(f.name, f.contents, {id: newPortfolio.id, order: i})
 	}))
 
-	return {...newPortfolio, files}
+	await Promise.all(portfolio.images.map(async (f, i) => {
+		await saveFile(f.name, f.contents, {id: newPortfolio.id, order: i})
+	}))
+}
+
+export async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody): Promise<void> {
+	await portfoliosDatabaseService.updatePortfolio(id, portfolio)
+
+	if(portfolio.files) await Promise.all(portfolio.files.map(async f => {
+		if (f.type === PortfolioUpdateFileType.DELETE) {
+			await deleteFile(f.id)
+		}
+		else if (f.type === PortfolioUpdateFileType.UPDATE) {
+			await updateFileOrder(f.id, f.order)
+		}
+		else if (f.type === PortfolioUpdateFileType.NEW) {
+			const file = await saveFile(f.name, f.contents, {id, order: f.order})
+			return file.name
+		}
+	}))
+
+	if(portfolio.images) await Promise.all(portfolio.images.map(async (f) => {
+		if (f.type === PortfolioUpdateFileType.DELETE) {
+			await deleteFile(f.id)
+		}
+		else if (f.type === PortfolioUpdateFileType.UPDATE) {
+			await updateFileOrder(f.id, f.order)
+		}
+		else if (f.type === PortfolioUpdateFileType.NEW) {
+			const file = await saveFile(f.name, f.contents, {id, order: f.order})
+			return file.name
+		}
+	}))
 }
