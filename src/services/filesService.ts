@@ -13,12 +13,22 @@ export async function getFile(name: string): Promise<Buffer> {
 	return fs.readFileSync(filePath)
 }
 
-export async function saveFile(filename: string, data: string): Promise<File> {
+export async function updateFileOrder(id: number, order: number): Promise<File> {
+	return await filesDatabaseService.updateFile(id, order)
+}
+
+export async function saveFile(filename: string, data: string, portfolio: { id: number, order: number }): Promise<File> {
 	const originalName = filename.split('.')[0]
+	const extension = filename.split('.').pop()
+	const type = extension === 'pdf' ? 'PDF' : 'IMG'
+
 	const file = {
 		name: `${DateTime.now().toMillis()}-${originalName}`,
 		originalName,
-		extension: filename.split('.').pop(),
+		extension,
+		portfolioOrder: portfolio.order,
+		portfolioId: portfolio.id,
+		type,
 	}
 
 	if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
@@ -26,4 +36,8 @@ export async function saveFile(filename: string, data: string): Promise<File> {
 	fs.writeFileSync(path.join(dir, `${file.name}.${file.extension}`), data, 'base64')
 
 	return await filesDatabaseService.save(file)
+}
+
+export async function deleteFile(id: number): Promise<void> {
+	await filesDatabaseService.deleteFile(id)
 }

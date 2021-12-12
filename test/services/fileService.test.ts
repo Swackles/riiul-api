@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import filesDatabaseService from '../../src/database/services/filesDatabaseService'
 import {query} from '../../src/database/services/databaseService'
+import faker from 'faker'
 
 const IMAGE_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
 const dir = path.join(__dirname, '../../files/')
@@ -28,18 +29,26 @@ describe('getFile', () => {
 })
 
 describe('saveFile', () => {
-	let data: string[] = []
+	let id: number
+
+	beforeAll(async () => {
+		const res = await query<{id: number}>(`INSERT INTO portfolios (subject_id, title, description, priority, active) VALUES
+				($1, $2, $3, $4, $5) RETURNING id`,
+		[1, faker.random.word(), faker.random.word(), 'false', 'true'])
+
+		id = res.rows[0].id
+	})
 
 	afterAll(async () => {
-		await query('DELETE FROM files WHERE extension = $1 AND name = $2', data)
+		await query('DELETE FROM portfolios WHERE id = $1', [id])
 	})
 
 	it('should store the file on the disk', async () => {
 		jest.spyOn(fs, 'writeFileSync').mockImplementation()
 		jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
 
-		const res = await saveFile('save-file-store.png', IMAGE_BASE64)
-		data = [res.extension, res.name]
+		const res = await saveFile('save-file-store.png', IMAGE_BASE64, { order: 0, id })
+
 		expect(res).not.toBeNull()
 		expect(res.originalName).toBe('save-file-store')
 		expect(res.extension).toBe('png')
@@ -57,7 +66,7 @@ describe('saveFile', () => {
 		const spyMkdirSync = jest.spyOn(fs, 'mkdirSync').mockImplementation()
 		const spyExistsSync = jest.spyOn(fs, 'existsSync').mockImplementation(() => false)
 
-		await saveFile('save-file-create.png', IMAGE_BASE64)
+		await saveFile('save-file-create.png', IMAGE_BASE64, { order: 1, id })
 
 		expect(spyExistsSync).toHaveBeenCalledWith(dir)
 		expect(spyMkdirSync).toHaveBeenCalledWith(dir, { recursive: true })
@@ -69,7 +78,7 @@ describe('saveFile', () => {
 		const spyMkdirSync = jest.spyOn(fs, 'mkdirSync').mockImplementation()
 		const spyExistsSync = jest.spyOn(fs, 'existsSync').mockImplementation(() => true)
 
-		await saveFile('save-file-create-not.png', IMAGE_BASE64)
+		await saveFile('save-file-create-not.png', IMAGE_BASE64, { order: 2, id })
 
 		expect(spyExistsSync).toHaveBeenCalledWith(dir)
 		expect(spyMkdirSync).not.toHaveBeenCalledWith('save-file-create-not.png', { recursive: true })

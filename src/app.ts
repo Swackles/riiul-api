@@ -8,23 +8,25 @@ import healthController from './controller/healthController'
 import usersController from './controller/usersController'
 import HttpErrorMessage from './enums/HttpErrorMessage'
 import cors from 'cors'
-import specialitiesController from './controller/specialitiesController'
+import specialitiesController from './controller/subjectsController'
 import filesController from './controller/filesController'
+import portfoliosController from './controller/portfoliosController'
 
 const app = express()
 
 app.use(cors())
 
 app.use(logger('dev'))
-app.use(express.json())
+app.use(express.json({limit: '50mb'}))
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
 app.use('/authenticate', authenticateController)
 app.use('/files', filesController)
 app.use('/health', healthController)
-app.use('/specialities', specialitiesController)
+app.use('/subjects', specialitiesController)
 app.use('/users', usersController)
+app.use('/portfolios', portfoliosController)
 
 app.use(function (req, res, next) {
 	next(createError(404))
