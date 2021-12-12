@@ -7,6 +7,7 @@ declare global {
 			PORT?: string
 			JWT_TOKEN: string
 			SALT_ROUNDS: string
+			ROLLBAR_TOKEN: string
 		}
 	}
 }

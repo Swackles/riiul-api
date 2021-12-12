@@ -67,3 +67,4 @@ This project uses few environment variables described below
 | DATABASE_URL | string | undefined | This is used to connect to the database
 | JWT_TOKEN | string | undefined | This is used to sign a JWT token
 | SALT_ROUNDS | number | undefined | Used to generate the salt for password hashing
+| ROLLBAR_TOKEN | string | undefined | Used to send errors to rollbar

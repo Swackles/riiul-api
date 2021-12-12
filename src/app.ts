@@ -11,6 +11,13 @@ import cors from 'cors'
 import specialitiesController from './controller/subjectsController'
 import filesController from './controller/filesController'
 import portfoliosController from './controller/portfoliosController'
+import Rollbar from 'rollbar'
+
+const rollbar = new Rollbar({
+	accessToken: process.env.ROLLBAR_TOKEN,
+	captureUncaught: true,
+	captureUnhandledRejections: true,
+})
 
 const app = express()
 
@@ -39,6 +46,10 @@ app.use((err: Record<string, string | number>, req: Request, res: Response,) => 
 	const body = {
 		success: false,
 		message
+	}
+
+	if (process.env.NODE_ENV === 'production') {
+		rollbar.error(err)
 	}
 
 	res.status(err.status as number || 500).send(body)
