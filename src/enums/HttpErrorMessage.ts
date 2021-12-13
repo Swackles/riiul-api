@@ -1,8 +1,0 @@
-enum HttpErrorMessage {
-	EMPTY_FIELDS = 'EMPTY_FIELDS',
-	EMAIL_EXISTS = 'EMAIL_EXISTS',
-	INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
-	USER_NOT_FOUND = 'USER_NOT_FOUND'
-}
-
-export default HttpErrorMessage

@@ -5,6 +5,8 @@ import Portfolio from '../../types/Portfolio'
 import PortfolioPostBody from '../../types/PortfolioPostBody'
 import PortfolioUpdateBody from '../../types/PortfolioUpdateBody'
 import PortfolioListQuery from '../../types/PortfolioListQuery'
+import HttpErrorNotFound from '../../errors/HttpErrorNotFound'
+import {PoolClient} from 'pg'
 
 const UPDATABLE_FIELDS = [
 	'subjectId',
@@ -45,12 +47,19 @@ function generateConditionQuery(speciality?: number, q?: string, active?: boolea
 
 async function findPortfolio(id: number): Promise<Portfolio> {
 	const res = await query<PortfolioDatabaseType>('SELECT * FROM portfolios WHERE id = $1', [id])
+	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 
 	return portfolioMapper(res.rows[0])
 }
 
 async function findPortfolioPublic(id: number): Promise<Portfolio> {
-	const res = await query<PortfolioDatabaseType>('SELECT * FROM portfolios WHERE id = $1 AND active = true', [id])
+	const res = await query<PortfolioDatabaseType>('SELECT * FROM portfolios' +
+		'LEFT JOIN subjects ON subjects.id = portfolios.subject_id' +
+		'WHERE id = $1' +
+		'AND active = true' +
+		'AND portfolios.active = $2' +
+		'AND subjects.active = $2', [id, true])
+	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 
 	return portfolioMapper(res.rows[0])
 }
@@ -78,10 +87,11 @@ async function allPortfoliosPublic(params?: PortfolioListQuery): Promise<Portfol
 }
 
 async function deletePortfolio(id: number): Promise<void> {
-	await query('DELETE FROM portfolios WHERE id = $1', [id])
+	const res = await query('DELETE FROM portfolios WHERE id = $1', [id])
+	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 }
 
-async function savePortfolio(portfolio: PortfolioPostBody): Promise<Portfolio> {
+async function savePortfolio(portfolio: PortfolioPostBody, client: PoolClient): Promise<Portfolio> {
 	const data = [
 		portfolio.subjectId,
 		portfolio.title,
@@ -95,12 +105,12 @@ async function savePortfolio(portfolio: PortfolioPostBody): Promise<Portfolio> {
 	]
 	const res = await query<PortfolioDatabaseType>('INSERT INTO portfolios' +
 		'(subject_id, title, description, tags, authors, priority, active, video_link, graduation_year)' +
-		'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *', data)
+		'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *', data, client)
 
 	return portfolioMapper(res.rows[0])
 }
 
-async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody): Promise<Portfolio> {
+async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody, client: PoolClient): Promise<Portfolio> {
 	const values: (boolean|string|number)[] = [id, new Date().toISOString()]
 	const fields = []
 
@@ -111,7 +121,8 @@ async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody): Prom
 		fields.push(`${key.replace(/([A-Z])/g, '_$1').trim()} = $${values.length}`)
 	}
 
-	const res = await query<PortfolioDatabaseType>(`UPDATE portfolios SET ${fields.join(', ')}, updated_at = $2 WHERE id = $1 RETURNING *`, values)
+	const res = await query<PortfolioDatabaseType>(`UPDATE portfolios SET ${fields.join(', ')}, updated_at = $2 WHERE id = $1 RETURNING *`, values, client)
+	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 
 	return portfolioMapper(res.rows[0])
 }

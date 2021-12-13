@@ -3,21 +3,23 @@ import filesDatabaseService from '../database/services/filesDatabaseService'
 import fs from 'fs'
 import path from 'path'
 import {DateTime} from 'luxon'
+import HttpErrorNotFound from '../errors/HttpErrorNotFound'
+import {PoolClient} from 'pg'
 
 const dir = path.join(__dirname, '/../../files/')
 
 export async function getFile(name: string): Promise<Buffer> {
 	const filePath = path.join(dir, name)
-	if (!fs.existsSync(filePath)) throw { status: 404, message: 'File not found' }
+	if (!fs.existsSync(filePath)) throw new HttpErrorNotFound('FILE_NOT_FOUND')
 
 	return fs.readFileSync(filePath)
 }
 
-export async function updateFileOrder(id: number, order: number): Promise<File> {
-	return await filesDatabaseService.updateFile(id, order)
+export async function updateFileOrder(id: number, order: number, client: PoolClient): Promise<File> {
+	return await filesDatabaseService.updateFile(id, order, client)
 }
 
-export async function saveFile(filename: string, data: string, portfolio: { id: number, order: number }): Promise<File> {
+export async function saveFile(filename: string, data: string, portfolio: { id: number, order: number }, client: PoolClient): Promise<File> {
 	const originalName = filename.split('.')[0]
 	const extension = filename.split('.').pop()
 	const type = extension === 'pdf' ? 'PDF' : 'IMG'
@@ -35,9 +37,9 @@ export async function saveFile(filename: string, data: string, portfolio: { id: 
 
 	fs.writeFileSync(path.join(dir, `${file.name}.${file.extension}`), data, 'base64')
 
-	return await filesDatabaseService.save(file)
+	return await filesDatabaseService.save(file, client)
 }
 
-export async function deleteFile(id: number): Promise<void> {
-	await filesDatabaseService.deleteFile(id)
+export async function deleteFile(id: number, client: PoolClient): Promise<void> {
+	await filesDatabaseService.deleteFile(id, client)
 }

@@ -4,6 +4,8 @@ import subjectMapper from '../mappers/subjectMapper'
 import SubjectDatabaseType from '../types/SubjectDatabaseType'
 import SubjectPostBody from '../../types/SubjectsPostBody'
 import SubjectUpdateBody from '../../types/SubjectUpdateBody'
+import HttpErrorBadRequest from '../../errors/HttpErrorBadRequest'
+import HttpErrorNotFound from '../../errors/HttpErrorNotFound'
 
 const UPDATABLE_FIELDS = ['name', 'active']
 
@@ -37,7 +39,10 @@ export async function updateSubject(id: number, subject: SubjectUpdateBody): Pro
 		fields.push(`${key} = $${values.length}`)
 	}
 
+	if (fields.length === 0) throw new HttpErrorBadRequest('NO_FIELDS_TO_UPDATE')
+
 	const res = await query<SubjectDatabaseType>(`UPDATE subjects SET ${fields.join(', ')}, updated_at = $2 WHERE id = $1 RETURNING *`, values)
+	if (res.rowCount === 0) throw new HttpErrorNotFound('SUBJECT_NOT_FOUND')
 
 	return subjectMapper(res.rows[0])
 }
