@@ -49,7 +49,7 @@ app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
 		err = new HttpErrorBadRequest('INVALID_JSON_BODY')
 	}
 
-	res.status(err.status).send(err.status ? err.getJson() : HttpError.getDefaultJson())
+	res.status(err.status || 500).send(err.status ? err.getJson() : HttpError.getDefaultJson())
 })
 
 app.listen(process.env.NODE_ENV === 'test' ? 0 : process.env.PORT || 8080)

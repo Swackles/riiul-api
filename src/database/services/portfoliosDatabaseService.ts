@@ -32,11 +32,12 @@ function generateConditionQuery(speciality?: number, q?: string, active?: boolea
 		data.push(q)
 		condition.push(
 			'title LIKE \'%<<__data__>>%\' OR description LIKE \'%<<__data__>>%\' OR tags LIKE \'%<<__data__>>%\' OR authors LIKE \'%<<__data__>>%\''
-				.replace('<<__data__>>', `$${data.length}`))
+				.replace(/<<__data__>>/g, `$${data.length}`))
 	}
 	if (active) {
 		data.push(active)
-		condition.push('portfolios.active = <<__data__>> AND subjects.active = <<__data__>>'.replace('<<__data__>>', `$${data.length}`))
+		condition.push('portfolios.active = <<__data__>> AND subjects.active = <<__data__>>'
+			.replace(/<<__data__>>/g, `$${data.length}`))
 	}
 
 	return {
@@ -77,9 +78,9 @@ async function allPortfolios(params?: PortfolioListQuery): Promise<Portfolio[]> 
 
 async function allPortfoliosPublic(params?: PortfolioListQuery): Promise<Portfolio[]> {
 	const {condition, data} = generateConditionQuery(parseInt(params?.speciality), params?.q, true)
-
+	console.log(condition)
 	const res = await query<PortfolioDatabaseType>(
-		`SELECT * FROM portfolios LEFT JOIN subjects ON subjects.id = portfolios.subject_id ${condition ? 'WHERE ' + condition : ''} order by priority desc, id desc`,
+		`SELECT * FROM portfolios LEFT JOIN subjects ON subjects.id = portfolios.subject_id ${condition ? 'WHERE ' + condition : ''} order by priority desc, portfolios.id desc`,
 		data
 	)
 

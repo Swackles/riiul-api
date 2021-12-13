@@ -40,6 +40,8 @@ export async function query<T>(query: string, params?: (string|number|boolean|nu
 			const field = (e as DatabaseError).detail.match(/Key \((.*?)\)/)
 			throw new HttpErrorBadRequest(`${field[1].toUpperCase()}_ALREADY_EXISTS`, e)
 		}
+
+		throw e
 	}
 
 }
