@@ -1,18 +1,14 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import usersDatabaseService from '../database/services/usersDatabaseService'
-import AuthenticateLoginResponse from '../types/AuthenticateLoginResponse'
 import HttpErrorBadRequest from '../errors/HttpErrorBadRequest'
 import HttpErrorUnauthorized from '../errors/HttpErrorUnauthorized'
 
-export async function login(email: string, password: string): Promise<AuthenticateLoginResponse> {
+export async function login(email: string, password: string): Promise<string> {
 	const res = await usersDatabaseService.findUserWithEmail(email)
 	if (!res || !bcrypt.compareSync(password, res.password)) throw new HttpErrorBadRequest('INVALID_EMAIL_OR_PASSWORD')
 
-	return {
-		username: res.name,
-		token: generateJwtToken(res.id)
-	}
+	return generateJwtToken(res.id)
 }
 
 export function generateJwtToken(id: number): string {
