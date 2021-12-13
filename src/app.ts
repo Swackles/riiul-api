@@ -43,7 +43,7 @@ app.use(asyncHandler(() => {
 
 app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
 	console.error(err.originalError || err)
-	if (process.env.NODE_ENV === 'production') rollbar.error(err)
+	if (process.env.NODE_ENV === 'production') rollbar.error(err.originalError || err)
 
 	if (err.status === 400 && (err as any).type === 'entity.parse.failed') {
 		err = new HttpErrorBadRequest('INVALID_JSON_BODY')
