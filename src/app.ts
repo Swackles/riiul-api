@@ -30,6 +30,11 @@ app.use(express.json({limit: '50mb'}))
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
+app.use((_req: Request, res: Response, next: NextFunction) => {
+	res.header('Access-Control-Expose-Headers', 'authorization')
+	next()
+})
+
 app.use('/authenticate', authenticateController)
 app.use('/files', filesController)
 app.use('/health', healthController)
