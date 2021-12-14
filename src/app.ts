@@ -14,6 +14,7 @@ import HttpError from './errors/HttpError'
 import HttpErrorBadRequest from './errors/HttpErrorBadRequest'
 import HttpErrorNotFound from './errors/HttpErrorNotFound'
 import asyncHandler from 'express-async-handler'
+import HttpErrorInternalServerError from './errors/HttpErrorInternalServerError'
 
 const rollbar = new Rollbar({
 	accessToken: process.env.ROLLBAR_TOKEN,
@@ -46,15 +47,22 @@ app.use(asyncHandler(() => {
 	throw new HttpErrorNotFound('NOT_FOUND')
 }))
 
-app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
-	console.error(err.originalError || err)
-	if (process.env.NODE_ENV === 'production') rollbar.error(err.originalError || err)
-
-	if (err.status === 400 && (err as any).type === 'entity.parse.failed') {
-		err = new HttpErrorBadRequest('INVALID_JSON_BODY')
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+	if (err instanceof HttpError) {
+		next(err)
+	}
+	else {
+		if ((err as any).status === 400 && (err as any).type === 'entity.parse.failed') {
+			next(new HttpErrorBadRequest('INVALID_JSON_BODY', err))
+		} else next(new HttpErrorInternalServerError(err))
 	}
 
-	res.status(err.status || 500).send(err.status ? err.getJson() : HttpError.getDefaultJson())
+})
+
+app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
+	rollbar.error(err.originalError, req)
+
+	res.status(err.status).send(err.getJson())
 })
 
 app.listen(process.env.NODE_ENV === 'test' ? 0 : process.env.PORT || 8080)

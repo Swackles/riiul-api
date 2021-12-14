@@ -9,13 +9,6 @@ class HttpError extends Error {
 		this.status = statusCode
 	}
 
-	static getDefaultJson(): { status: number; message: string } {
-		return {
-			status: 500,
-			message: 'INTERNAL_SERVER_ERROR',
-		}
-	}
-
 	getJson(): { status: number; message: string } {
 		return {
 			status: this.status,

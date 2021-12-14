@@ -78,7 +78,7 @@ async function allPortfolios(params?: PortfolioListQuery): Promise<Portfolio[]> 
 
 async function allPortfoliosPublic(params?: PortfolioListQuery): Promise<Portfolio[]> {
 	const {condition, data} = generateConditionQuery(parseInt(params?.speciality), params?.q, true)
-	console.log(condition)
+
 	const res = await query<PortfolioDatabaseType>(
 		`SELECT * FROM portfolios LEFT JOIN subjects ON subjects.id = portfolios.subject_id ${condition ? 'WHERE ' + condition : ''} order by priority desc, portfolios.id desc`,
 		data
