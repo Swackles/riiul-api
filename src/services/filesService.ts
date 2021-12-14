@@ -5,6 +5,7 @@ import path from 'path'
 import {DateTime} from 'luxon'
 import HttpErrorNotFound from '../errors/HttpErrorNotFound'
 import {PoolClient} from 'pg'
+import {rollback} from '../database/services/databaseService'
 
 const dir = path.join(__dirname, '/../../files/')
 
@@ -33,9 +34,14 @@ export async function saveFile(filename: string, data: string, portfolio: { id: 
 		type,
 	}
 
-	if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+	try {
+		if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 
-	fs.writeFileSync(path.join(dir, `${file.name}.${file.extension}`), data, 'base64')
+		fs.writeFileSync(path.join(dir, `${file.name}.${file.extension}`), data, 'base64')
+	} catch (err) {
+		await rollback(client)
+		throw err
+	}
 
 	return await filesDatabaseService.save(file, client)
 }

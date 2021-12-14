@@ -11,7 +11,7 @@ import PortfolioUpdateFileType from '../enums/PortfolioUpdateFileType'
 import PortfolioListQuery from '../types/PortfolioListQuery'
 import File from '../types/File'
 import HttpErrorNotFound from '../errors/HttpErrorNotFound'
-import {begin, commit, rollback} from '../database/services/databaseService'
+import {begin, commit} from '../database/services/databaseService'
 
 export async function findPortfolio(id: number, user?: User): Promise<PortfolioResponse> {
 	let portfolio: Portfolio
@@ -69,60 +69,49 @@ export async function deletePortfolio(id: number): Promise<void> {
 export async function addPortfolio(portfolio: PortfolioPostBody): Promise<void> {
 	const client = await begin()
 
-	try {
-		const newPortfolio = await portfoliosDatabaseService.savePortfolio(portfolio, client)
+	const newPortfolio = await portfoliosDatabaseService.savePortfolio(portfolio, client)
 
-		await Promise.all(portfolio.files.map(async (f, i) => {
-			await saveFile(f.name, f.contents, {id: newPortfolio.id, order: i}, client)
-		}))
+	await Promise.all(portfolio.files.map(async (f, i) => {
+		await saveFile(f.name, f.contents, {id: newPortfolio.id, order: i}, client)
+	}))
 
-		await Promise.all(portfolio.images.map(async (f, i) => {
-			await saveFile(f.name, f.contents, {id: newPortfolio.id, order: i}, client)
-		}))
+	await Promise.all(portfolio.images.map(async (f, i) => {
+		await saveFile(f.name, f.contents, {id: newPortfolio.id, order: i}, client)
+	}))
 
-		await commit(client)
-	} catch (e) {
-		await rollback(client)
-
-		throw new Error(e)
-	}
+	await commit(client)
 }
 
 export async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody): Promise<void> {
 	const client = await begin()
 
-	try {
-		await portfoliosDatabaseService.updatePortfolio(id, portfolio, client)
+	await portfoliosDatabaseService.updatePortfolio(id, portfolio, client)
 
-		if(portfolio.files) await Promise.all(portfolio.files.map(async f => {
-			if (f.type === PortfolioUpdateFileType.DELETE) {
-				await deleteFile(f.id, client)
-			}
-			else if (f.type === PortfolioUpdateFileType.UPDATE) {
-				await updateFileOrder(f.id, f.order, client)
-			}
-			else if (f.type === PortfolioUpdateFileType.NEW) {
-				const file = await saveFile(f.name, f.contents, {id, order: f.order}, client)
-				return file.name
-			}
-		}))
+	if(portfolio.files) await Promise.all(portfolio.files.map(async f => {
+		if (f.type === PortfolioUpdateFileType.DELETE) {
+			await deleteFile(f.id, client)
+		}
+		else if (f.type === PortfolioUpdateFileType.UPDATE) {
+			await updateFileOrder(f.id, f.order, client)
+		}
+		else if (f.type === PortfolioUpdateFileType.NEW) {
+			const file = await saveFile(f.name, f.contents, {id, order: f.order}, client)
+			return file.name
+		}
+	}))
 
-		if(portfolio.images) await Promise.all(portfolio.images.map(async (f) => {
-			if (f.type === PortfolioUpdateFileType.DELETE) {
-				await deleteFile(f.id, client)
-			}
-			else if (f.type === PortfolioUpdateFileType.UPDATE) {
-				await updateFileOrder(f.id, f.order, client)
-			}
-			else if (f.type === PortfolioUpdateFileType.NEW) {
-				const file = await saveFile(f.name, f.contents, {id, order: f.order}, client)
-				return file.name
-			}
-		}))
+	if(portfolio.images) await Promise.all(portfolio.images.map(async (f) => {
+		if (f.type === PortfolioUpdateFileType.DELETE) {
+			await deleteFile(f.id, client)
+		}
+		else if (f.type === PortfolioUpdateFileType.UPDATE) {
+			await updateFileOrder(f.id, f.order, client)
+		}
+		else if (f.type === PortfolioUpdateFileType.NEW) {
+			const file = await saveFile(f.name, f.contents, {id, order: f.order}, client)
+			return file.name
+		}
+	}))
 
-		await commit(client)
-	} catch (e) {
-		await rollback(client)
-		throw e
-	}
+	await commit(client)
 }
