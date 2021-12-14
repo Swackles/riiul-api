@@ -2,7 +2,7 @@ type PortfolioListResponse = {
 	id: number
 	title: string
 	active?: boolean
-	images: string[] | {id: number, name: string}[]
+	image: string
 	specialityId: number
 }
 

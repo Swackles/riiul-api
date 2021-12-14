@@ -4,7 +4,7 @@ import {
 	addPortfolio,
 	deletePortfolio,
 	findPortfolio,
-	getPortfolios,
+	getPortfolios, getPreviewPortfolios,
 	updatePortfolio
 } from '../services/portfoliosService'
 import PortfolioListResponse from '../types/PortfolioListResponse'
@@ -23,6 +23,10 @@ router.get<{id: number}, PortfolioResponse>('/:id([0-9]+)', optionalAuthenticati
 
 router.get<never, PortfolioListResponse[], never, PortfolioListQuery, never>('/', optionalAuthentication, asyncHandler(async (req, res) => {
 	res.status(200).send(await getPortfolios(res.locals.user, req.query))
+}))
+
+router.get<never, Record<number, PortfolioListResponse[]>>('/preview', asyncHandler(async (req, res) => {
+	res.status(200).send(await getPreviewPortfolios())
 }))
 
 router.delete<{id: number}, never>('/:id([0-9]+)', validateAuthentication, asyncHandler(async (req, res) => {

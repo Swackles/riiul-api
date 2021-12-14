@@ -60,7 +60,8 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 })
 
 app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
-	rollbar.error(err.originalError, req)
+	console.error(err.originalError || err)
+	rollbar.error(err.originalError || err, req)
 
 	res.status(err.status).send(err.getJson())
 })

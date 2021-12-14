@@ -47,19 +47,44 @@ export async function getPortfolios(user?: User, query?: PortfolioListQuery): Pr
 		portfolios = await portfoliosDatabaseService.allPortfoliosPublic(query)
 	}
 
-	const images = await filesDatabaseService.findWithPortfoliosId(portfolios.map(p => p.id))
+	const images = (await filesDatabaseService.findWithPortfoliosId(portfolios.map(p => p.id)))
+		.filter(f => f.type === 'IMG')
+		.map(f => ({ id: f.portfolioId, name: f.name + '.' + f.extension} ))
 
 	return portfolios.map(p => {
 		const data: PortfolioListResponse = {
 			id: p.id,
 			title: p.title,
 			specialityId: p.specialityId,
-			images: images.filter(f => f.portfolioId === p.id && f.extension !== 'pdf').map(f => f.name),
+			image: images.find(i => i.id === p.id).name,
 		}
 		if (user) data.active = p.active
 
 		return data
 	})
+}
+
+export async function getPreviewPortfolios(): Promise<Record<number, PortfolioListResponse[]>> {
+	const portfolios = await portfoliosDatabaseService.allPortfoliosPublic()
+	const images = (await filesDatabaseService.findWithPortfoliosId(portfolios.map(p => p.id)))
+		.filter(f => f.type === 'IMG')
+		.map(f => ({ id: f.portfolioId, name: f.name + '.' + f.extension} ))
+	const specialities = portfolios.map(p => p.specialityId)
+		.filter((s, i, a) => a.indexOf(s) === i)
+
+	const res: Record<number, PortfolioListResponse[]> = {}
+	for (const specialityId of specialities) {
+		res[specialityId] = portfolios
+			.filter(p => p.specialityId === specialityId)
+			.map(p => ({
+				id: p.id,
+				title: p.title,
+				specialityId: p.specialityId,
+				image: images.find(i => i.id === p.id).name,
+			}))
+	}
+
+	return res
 }
 
 export async function deletePortfolio(id: number): Promise<void> {
