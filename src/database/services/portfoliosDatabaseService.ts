@@ -54,11 +54,11 @@ async function findPortfolio(id: number): Promise<Portfolio> {
 }
 
 async function findPortfolioPublic(id: number): Promise<Portfolio> {
-	const res = await query<PortfolioDatabaseType>('SELECT * FROM portfolios' +
-		'LEFT JOIN subjects ON subjects.id = portfolios.subject_id' +
-		'WHERE id = $1' +
-		'AND active = true' +
-		'AND portfolios.active = $2' +
+	const res = await query<PortfolioDatabaseType>(
+		'SELECT *, portfolios.id as id FROM portfolios ' +
+		'LEFT JOIN subjects ON subjects.id = portfolios.subject_id ' +
+		'WHERE portfolios.id = $1 ' +
+		'AND portfolios.active = $2 ' +
 		'AND subjects.active = $2', [id, true])
 	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 
