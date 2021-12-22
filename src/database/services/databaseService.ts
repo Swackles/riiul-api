@@ -26,6 +26,12 @@ export async function query<T>(query: string, params?: (string|number|boolean|nu
 	if(doesClientNotExist) client = await begin()
 
 	try {
+		if (params) params = params.map(param => {
+			if (typeof param === 'string' && param === '') return null
+
+			return param
+		})
+
 		const res = await client.query(query, params)
 
 		if (doesClientNotExist) await commit(client)
