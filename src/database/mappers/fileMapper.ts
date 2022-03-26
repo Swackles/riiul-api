@@ -2,7 +2,7 @@ import {DateTime} from 'luxon'
 import File from '../../types/File'
 import FileDatabaseType from '../types/FileDatabaseType'
 
-function userMapper(databaseFile?: FileDatabaseType): File | null {
+function fileMapper(databaseFile?: FileDatabaseType): File | null {
 	if (!databaseFile) return null
 
 	const file = { ...databaseFile }
@@ -22,4 +22,4 @@ function userMapper(databaseFile?: FileDatabaseType): File | null {
 	}
 }
 
-export default userMapper
+export default fileMapper

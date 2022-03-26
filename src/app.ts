@@ -60,8 +60,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 })
 
 app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
-	console.error(err.originalError || err)
-	rollbar.error(err.originalError || err, req)
+	if (process.env.NODE_ENV !== 'test') {
+		console.error(err.originalError || err)
+		rollbar.error(err.originalError || err, req)
+	}
 
 	res.status(err.status).send(err.getJson())
 })

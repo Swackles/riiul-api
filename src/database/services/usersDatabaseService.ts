@@ -4,6 +4,7 @@ import User from '../../types/User'
 import userMapper from '../mappers/userMapper'
 import UsersPostBody from '../../types/UsersPostBody'
 import HttpErrorNotFound from '../../errors/HttpErrorNotFound'
+import {PoolClient} from 'pg'
 
 const UPDATABLE_FIELDS = ['name', 'email', 'password']
 
@@ -32,9 +33,9 @@ export async function findUserWithEmail(email: string): Promise<User | null> {
 	return userMapper(res.rows[0])
 }
 
-export async function saveUser(user: UsersPostBody): Promise<User> {
+export async function saveUser(user: UsersPostBody, client?: PoolClient): Promise<User> {
 	const data = [user.name, user.email, user.password]
-	const res = await query<UserDatabaseType>('INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *', data)
+	const res = await query<UserDatabaseType>('INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *', data, client)
 
 	return userMapper(res.rows[0])
 }

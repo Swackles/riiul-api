@@ -65,23 +65,27 @@ async function findPortfolioPublic(id: number): Promise<Portfolio> {
 	return portfolioMapper(res.rows[0])
 }
 
-async function allPortfolios(params?: PortfolioListQuery): Promise<Portfolio[]> {
+async function allPortfolios(params?: PortfolioListQuery, client?: PoolClient): Promise<Portfolio[]> {
 	const {condition, data} = generateConditionQuery(parseInt(params?.speciality), params?.q)
 
+	// noinspection SqlResolve
 	const res = await query<PortfolioDatabaseType>(
 		`SELECT * FROM portfolios ${condition ? 'WHERE ' + condition : ''} order by portfolios.id desc`,
-		data
+		data,
+		client
 	)
 
 	return res.rows.map(portfolioMapper)
 }
 
-async function allPortfoliosPublic(params?: PortfolioListQuery): Promise<Portfolio[]> {
+async function allPortfoliosPublic(params?: PortfolioListQuery, client?: PoolClient): Promise<Portfolio[]> {
 	const {condition, data} = generateConditionQuery(parseInt(params?.speciality), params?.q, true)
 
+	// noinspection SqlResolve
 	const res = await query<PortfolioDatabaseType>(
 		`SELECT portfolios.* FROM portfolios LEFT JOIN subjects ON subjects.id = portfolios.subject_id ${condition ? 'WHERE ' + condition : ''} order by priority desc, portfolios.id desc`,
-		data
+		data,
+		client
 	)
 
 	return res.rows.map(portfolioMapper)

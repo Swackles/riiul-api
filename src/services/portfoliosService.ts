@@ -12,6 +12,7 @@ import PortfolioListQuery from '../types/PortfolioListQuery'
 import File from '../types/File'
 import HttpErrorNotFound from '../errors/HttpErrorNotFound'
 import {begin, commit} from '../database/services/databaseService'
+import {PoolClient} from 'pg'
 
 export async function findPortfolio(id: number, user?: User): Promise<PortfolioResponse> {
 	let portfolio: Portfolio
@@ -38,16 +39,16 @@ export async function findPortfolio(id: number, user?: User): Promise<PortfolioR
 	}
 }
 
-export async function getPortfolios(user?: User, query?: PortfolioListQuery): Promise<PortfolioListResponse[]> {
+export async function getPortfolios(user?: User, query?: PortfolioListQuery, client?: PoolClient): Promise<PortfolioListResponse[]> {
 	let portfolios: Portfolio[]
 
 	if (user) {
-		portfolios = await portfoliosDatabaseService.allPortfolios(query)
+		portfolios = await portfoliosDatabaseService.allPortfolios(query, client)
 	} else {
-		portfolios = await portfoliosDatabaseService.allPortfoliosPublic(query)
+		portfolios = await portfoliosDatabaseService.allPortfoliosPublic(query, client)
 	}
 
-	const images = (await filesDatabaseService.findWithPortfoliosId(portfolios.map(p => p.id)))
+	const images = (await filesDatabaseService.findWithPortfoliosId(portfolios.map(p => p.id), client))
 		.filter(f => f.type === 'IMG')
 		.map(f => ({ id: f.portfolioId, name: f.name + '.' + f.extension} ))
 
