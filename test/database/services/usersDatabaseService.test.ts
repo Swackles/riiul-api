@@ -2,6 +2,7 @@ import { query } from '../../../src/database/services/databaseService'
 import usersDatabaseService, {findUserWithEmail, saveUser, updateUser} from '../../../src/database/services/usersDatabaseService'
 import faker from 'faker'
 import UserDatabaseType from '../../../src/database/types/UserDatabaseType'
+import UsersPostBody from '../../../src/types/UsersPostBody'
 
 describe('allUsers', () => {
 	it('should return all users', async () => {
@@ -37,6 +38,12 @@ describe('getUser', () => {
 		const res = await  usersDatabaseService.getUser(-1)
 
 		expect(res).toBeNull()
+	})
+
+	it('should throw not found error if user isn\'t found', async () => {
+		await expect(usersDatabaseService.findUserWithId(id + 1))
+			.rejects
+			.toThrow('USER_NOT_FOUND')
 	})
 })
 
@@ -117,9 +124,15 @@ describe('updateUser', () => {
 		expect(res.password).toBe(value.password || data[2])
 		expect(res.id).toBe(id)
 	})
+
+	it('should throw not found error if user isn\'t found', async () => {
+		await expect(usersDatabaseService.updateUser(id + 1, {name: 'new name'} as UsersPostBody))
+			.rejects
+			.toThrow('USER_NOT_FOUND')
+	})
 })
 
-describe('delete', () => {
+describe('deleteUser', () => {
 	let id: number
 
 	beforeEach(async () => {
@@ -134,5 +147,11 @@ describe('delete', () => {
 
 	it('should delete the user', async () => {
 		expect(usersDatabaseService.deleteUser(id)).resolves
+	})
+
+	it('should throw not found error if user isn\'t found', async () => {
+		await expect(usersDatabaseService.deleteUser(id + 1))
+			.rejects
+			.toThrow('USER_NOT_FOUND')
 	})
 })

@@ -7,6 +7,7 @@ import PortfolioUpdateBody from '../../types/PortfolioUpdateBody'
 import PortfolioListQuery from '../../types/PortfolioListQuery'
 import HttpErrorNotFound from '../../errors/HttpErrorNotFound'
 import {PoolClient} from 'pg'
+import HttpErrorBadRequest from '../../errors/HttpErrorBadRequest'
 
 const UPDATABLE_FIELDS = [
 	'subjectId',
@@ -29,14 +30,14 @@ function generateConditionQuery(speciality?: number, q?: string, active?: boolea
 		condition.push(`subject_id = $${data.length}`)
 	}
 	if (q) {
-		data.push(q)
+		data.push(`%${q}%`)
 		condition.push(
-			'title LIKE \'%<<__data__>>%\' OR description LIKE \'%<<__data__>>%\' OR tags LIKE \'%<<__data__>>%\' OR authors LIKE \'%<<__data__>>%\''
+			'(title LIKE <<__data__>> OR description LIKE <<__data__>>)'
 				.replace(/<<__data__>>/g, `$${data.length}`))
 	}
 	if (active) {
 		data.push(active)
-		condition.push('portfolios.active = <<__data__>> AND subjects.active = <<__data__>>'
+		condition.push('(portfolios.active = <<__data__>> AND subjects.active = <<__data__>>)'
 			.replace(/<<__data__>>/g, `$${data.length}`))
 	}
 
@@ -46,31 +47,36 @@ function generateConditionQuery(speciality?: number, q?: string, active?: boolea
 	}
 }
 
-async function findPortfolio(id: number): Promise<Portfolio> {
-	const res = await query<PortfolioDatabaseType>('SELECT * FROM portfolios WHERE id = $1', [id])
+async function findPortfolio(id: number, client?: PoolClient): Promise<Portfolio> {
+	const res = await query<PortfolioDatabaseType>('SELECT * FROM portfolios WHERE id = $1', [id], client)
 	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 
 	return portfolioMapper(res.rows[0])
 }
 
-async function findPortfolioPublic(id: number): Promise<Portfolio> {
+async function findPortfolioPublic(id: number, client?: PoolClient): Promise<Portfolio> {
+
 	const res = await query<PortfolioDatabaseType>(
 		'SELECT *, portfolios.id as id FROM portfolios ' +
 		'LEFT JOIN subjects ON subjects.id = portfolios.subject_id ' +
 		'WHERE portfolios.id = $1 ' +
 		'AND portfolios.active = $2 ' +
-		'AND subjects.active = $2', [id, true])
+		'AND subjects.active = $2', [id, true], client)
 	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 
 	return portfolioMapper(res.rows[0])
 }
 
 async function allPortfolios(params?: PortfolioListQuery, client?: PoolClient): Promise<Portfolio[]> {
-	const {condition, data} = generateConditionQuery(parseInt(params?.speciality), params?.q)
+	const {condition, data} = generateConditionQuery(
+		parseInt(params?.speciality),
+		params?.q,
+		params?.active ? params.active == 'true' : null
+	)
 
 	// noinspection SqlResolve
 	const res = await query<PortfolioDatabaseType>(
-		`SELECT * FROM portfolios ${condition ? 'WHERE ' + condition : ''} order by portfolios.id desc`,
+		`SELECT portfolios.* FROM portfolios LEFT JOIN subjects ON subjects.id = portfolios.subject_id ${condition ? 'WHERE ' + condition : ''} order by portfolios.priority desc, portfolios.id desc`,
 		data,
 		client
 	)
@@ -79,20 +85,16 @@ async function allPortfolios(params?: PortfolioListQuery, client?: PoolClient): 
 }
 
 async function allPortfoliosPublic(params?: PortfolioListQuery, client?: PoolClient): Promise<Portfolio[]> {
-	const {condition, data} = generateConditionQuery(parseInt(params?.speciality), params?.q, true)
+	params = {
+		...params,
+		active: 'true'
+	}
 
-	// noinspection SqlResolve
-	const res = await query<PortfolioDatabaseType>(
-		`SELECT portfolios.* FROM portfolios LEFT JOIN subjects ON subjects.id = portfolios.subject_id ${condition ? 'WHERE ' + condition : ''} order by priority desc, portfolios.id desc`,
-		data,
-		client
-	)
-
-	return res.rows.map(portfolioMapper)
+	return await allPortfolios(params, client)
 }
 
-async function deletePortfolio(id: number): Promise<void> {
-	const res = await query('DELETE FROM portfolios WHERE id = $1', [id])
+async function deletePortfolio(id: number, client?: PoolClient): Promise<void> {
+	const res = await query('DELETE FROM portfolios WHERE id = $1', [id], client)
 	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 }
 
@@ -125,6 +127,8 @@ async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody, clien
 		values.push(value as boolean|string|number)
 		fields.push(`${key.replace(/([A-Z])/g, '_$1').trim()} = $${values.length}`)
 	}
+
+	if (fields.length === 0) throw new HttpErrorBadRequest('NO_FIELDS_TO_UPDATE')
 
 	const res = await query<PortfolioDatabaseType>(`UPDATE portfolios SET ${fields.join(', ')}, updated_at = $2 WHERE id = $1 RETURNING *`, values, client)
 	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')

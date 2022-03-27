@@ -3,7 +3,6 @@ import express, {NextFunction, Request, Response} from 'express'
 import logger from 'morgan'
 import cookieParser from 'cookie-parser'
 import authenticateController from './controller/authenticateController'
-import healthController from './controller/healthController'
 import usersController from './controller/usersController'
 import cors from 'cors'
 import specialitiesController from './controller/subjectsController'
@@ -38,7 +37,6 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
 
 app.use('/authenticate', authenticateController)
 app.use('/files', filesController)
-app.use('/health', healthController)
 app.use('/subjects', specialitiesController)
 app.use('/users', usersController)
 app.use('/portfolios', portfoliosController)

@@ -4,7 +4,6 @@ import FileDatabaseType from '../types/FileDatabaseType'
 import SaveFileType from '../types/SaveFileType'
 import fileMapper from '../mappers/fileMapper'
 import HttpErrorNotFound from '../../errors/HttpErrorNotFound'
-import HttpErrorBadRequest from '../../errors/HttpErrorBadRequest'
 import {PoolClient} from 'pg'
 
 async function findWithNameAndExtension(name: string, extension: string, client?: PoolClient): Promise<File> {
@@ -42,11 +41,10 @@ async function deleteFile(id: number, client?: PoolClient): Promise<void> {
 }
 
 async function updateFile(id: number, order: number, client: PoolClient): Promise<File> {
-	if (!order) throw new HttpErrorBadRequest('FILE_ORDER_IS_REQUIRED')
-
 	const res = await query<FileDatabaseType>('UPDATE files SET portfolio_order = $3, updated_at = $2 WHERE id = $1 RETURNING *',
 		[id, new Date().toISOString(), order],
 		client)
+
 	if (res.rowCount === 0) throw new HttpErrorNotFound('FILE_NOT_FOUND')
 
 	return fileMapper(res.rows[0])

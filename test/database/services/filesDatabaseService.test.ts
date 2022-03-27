@@ -177,4 +177,62 @@ describe('delete', () => {
 		expect(res).not.toBeNull()
 		expect(res.rowCount).toBe(0)
 	})
+
+	it('should throw not found error if file isn\'t found', async () => {
+		await expect(filesDatabaseService.deleteFile(id + 1, client))
+			.rejects
+			.toThrow("FILE_NOT_FOUND")
+	})
+})
+
+describe('updateFile', () => {
+	const originalName = faker.random.word()
+	const data = [0, `${faker.datatype.uuid()}-${originalName}`, 'pdf', originalName]
+
+	let client: PoolClient
+	let id: number
+
+	beforeEach(async () => {
+		client = await begin()
+
+		const newPortfolio = await query<{ id: number }>(
+			`INSERT INTO portfolios (subject_id, title, description, priority, active) VALUES
+				($1, $2, $3, $4, $5) RETURNING id`,
+			[1, faker.random.word(), faker.random.word(), false, true],
+			client
+		)
+
+		const res = await query<FileDatabaseType>(
+			'INSERT INTO files (portfolio_id, portfolio_order, name, extension, original_name)' +
+			'VALUES ($1, $2, $3, $4, $5) RETURNING *', [newPortfolio.rows[0].id, ...data],
+			client)
+
+		id = res.rows[0].id
+	})
+
+	afterEach(async () => {
+		await rollback(client)
+	})
+
+	it('should update the file', async () => {
+		const now = DateTime.now()
+		const res = await filesDatabaseService.updateFile(id, 1, client)
+
+		expect(res).not.toBeNull()
+		expect(res).toMatchObject({
+			id,
+			portfolioOrder: 1,
+			name: data[1],
+			extension: data[2],
+			originalName: data[3]
+		})
+
+		expect(res.updatedAt.toMillis()).toBeLessThanOrEqual(now.toMillis())
+	})
+
+	it('should throw not found error if file isn\'t found', async () => {
+		await expect(filesDatabaseService.updateFile(id + 1, 1, client))
+			.rejects
+			.toThrow("FILE_NOT_FOUND")
+	})
 })
