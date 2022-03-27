@@ -42,50 +42,20 @@ describe('validateToken', () => {
 		expect(validateToken(generateJwtToken(9))).toBe(9)
 	})
 
-	it('should throw an error with 401 status when token is expired', () => {
-		const token = jwt.sign({ id: 9 }, process.env.JWT_TOKEN, { expiresIn: -20000 })
-		try {
-			validateToken(token)
-		} catch(err) {
-			expect(err.status).toBe(401)
-			expect(err.message).toBe('jwt expired')
-		}
-	})
-
-	it('should throw an error with 401 status when token has invalid signature', () => {
-		const token = jwt.sign({ id: 9 }, 'random key')
-		try {
-			validateToken(token)
-		} catch(err) {
-			expect(err.status).toBe(401)
-			expect(err.message).toBe('invalid signature')
-		}
-	})
-
-	it('should throw an error with 401 status when token is malformed', () => {
-		try {
-			validateToken('random token')
-		} catch(err) {
-			expect(err.status).toBe(401)
-			expect(err.message).toBe('jwt malformed')
-		}
-	})
-
-	it('should not throw an error when error is suppressed', () => {
-		expect(validateToken('random token', true)).toBe(null)
-	})
-
 	test.each`
-	token
-	${undefined}
-	${null}
-	${''}
-	`('throws error with 401 status when token is not provided("$token")', ({ token }) => {
+	msg 						| token
+	${'is expired'}				| ${jwt.sign({ id: 9 }, process.env.JWT_TOKEN, { expiresIn: -20000 })}
+	${'has invalid signature'}	| ${jwt.sign({ id: 9 }, 'random key')}
+	${'is malformed'}			| ${'random token'}
+	${'is undefined'}			| ${undefined}
+	${'is null'}				| ${null}
+	${'is empty'}				| ${''}
+	`('should throw an error with 401 status when token ("$msg")', ({ token }) => {
 		try {
 			validateToken(token)
 		} catch(err) {
 			expect(err.status).toBe(401)
-			expect(err.message).toBe('jwt must be provided')
+			expect(err.message).toBe('INVALID_TOKEN')
 		}
 	})
 })

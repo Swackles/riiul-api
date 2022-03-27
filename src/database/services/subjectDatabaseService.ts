@@ -6,29 +6,30 @@ import SubjectPostBody from '../../types/SubjectsPostBody'
 import SubjectUpdateBody from '../../types/SubjectUpdateBody'
 import HttpErrorBadRequest from '../../errors/HttpErrorBadRequest'
 import HttpErrorNotFound from '../../errors/HttpErrorNotFound'
+import {PoolClient} from 'pg'
 
 const UPDATABLE_FIELDS = ['name', 'active']
 
-export async function allSubjects(): Promise<Subject[]> {
-	const res = await query<SubjectDatabaseType>('SELECT * FROM subjects ORDER BY id desc')
+export async function allSubjects(client?: PoolClient): Promise<Subject[]> {
+	const res = await query<SubjectDatabaseType>('SELECT * FROM subjects ORDER BY id desc', [], client)
 
 	return res.rows.map(subjectMapper)
 }
 
-export async function allSubjectsPublic(): Promise<Subject[]> {
-	const res = await query<SubjectDatabaseType>('SELECT * FROM subjects WHERE active = true ORDER BY id desc')
+export async function allSubjectsPublic(client?: PoolClient): Promise<Subject[]> {
+	const res = await query<SubjectDatabaseType>('SELECT * FROM subjects WHERE active = true ORDER BY id desc', [], client)
 
 	return res.rows.map(subjectMapper)
 }
 
-export async function saveSubject(subject: SubjectPostBody): Promise<Subject> {
+export async function saveSubject(subject: SubjectPostBody, client?: PoolClient): Promise<Subject> {
 	const data = [subject.name, subject.active]
-	const res = await query<SubjectDatabaseType>('INSERT INTO subjects (name, active) VALUES ($1, $2) RETURNING *', data)
+	const res = await query<SubjectDatabaseType>('INSERT INTO subjects (name, active) VALUES ($1, $2) RETURNING *', data, client)
 
 	return  subjectMapper(res.rows[0])
 }
 
-export async function updateSubject(id: number, subject: SubjectUpdateBody): Promise<Subject> {
+export async function updateSubject(id: number, subject: SubjectUpdateBody, client?: PoolClient): Promise<Subject> {
 	const values: Array<string | number | boolean> = [id, new Date().toISOString()]
 	const fields = []
 
@@ -41,7 +42,7 @@ export async function updateSubject(id: number, subject: SubjectUpdateBody): Pro
 
 	if (fields.length === 0) throw new HttpErrorBadRequest('NO_FIELDS_TO_UPDATE')
 
-	const res = await query<SubjectDatabaseType>(`UPDATE subjects SET ${fields.join(', ')}, updated_at = $2 WHERE id = $1 RETURNING *`, values)
+	const res = await query<SubjectDatabaseType>(`UPDATE subjects SET ${fields.join(', ')}, updated_at = $2 WHERE id = $1 RETURNING *`, values, client)
 	if (res.rowCount === 0) throw new HttpErrorNotFound('SUBJECT_NOT_FOUND')
 
 	return subjectMapper(res.rows[0])

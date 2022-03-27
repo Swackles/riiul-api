@@ -8,6 +8,9 @@ describe('fileMapper', () => {
 			name: '12345678-document',
 			extension: '.pdf',
 			original_name: 'document',
+			portfolio_order: 1,
+			portfolio_id: 2,
+			type: 'PDF',
 			created_at: new Date('2021-10-10T00:00:00.000'),
 			updated_at: new Date('2021-10-27T00:00:00.000')
 		}
@@ -16,6 +19,9 @@ describe('fileMapper', () => {
 			name: '12345678-document',
 			extension: '.pdf',
 			originalName: 'document',
+			portfolioOrder: 1,
+			portfolioId: 2,
+			type: 'PDF',
 			createdAt: DateTime.fromObject({ year: 2021, month: 10, day: 10}),
 			updatedAt: DateTime.fromObject({ year: 2021, month: 10, day: 27})
 		}

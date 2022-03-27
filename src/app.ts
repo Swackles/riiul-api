@@ -3,7 +3,6 @@ import express, {NextFunction, Request, Response} from 'express'
 import logger from 'morgan'
 import cookieParser from 'cookie-parser'
 import authenticateController from './controller/authenticateController'
-import healthController from './controller/healthController'
 import usersController from './controller/usersController'
 import cors from 'cors'
 import specialitiesController from './controller/subjectsController'
@@ -38,7 +37,6 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
 
 app.use('/authenticate', authenticateController)
 app.use('/files', filesController)
-app.use('/health', healthController)
 app.use('/subjects', specialitiesController)
 app.use('/users', usersController)
 app.use('/portfolios', portfoliosController)
@@ -60,8 +58,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 })
 
 app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
-	console.error(err.originalError || err)
-	rollbar.error(err.originalError || err, req)
+	if (process.env.NODE_ENV !== 'test') {
+		console.error(err.originalError || err)
+		rollbar.error(err.originalError || err, req)
+	}
 
 	res.status(err.status).send(err.getJson())
 })

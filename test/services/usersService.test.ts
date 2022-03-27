@@ -1,9 +1,19 @@
 import {addUser} from '../../src/services/usersService'
 import * as faker from 'faker'
-import {query} from '../../src/database/services/databaseService'
-import HttpErrorMessage from '../../src/enums/HttpErrorMessage'
+import {begin, query, rollback} from '../../src/database/services/databaseService'
+import {PoolClient} from 'pg'
 
 describe('addUser', () => {
+	let client: PoolClient
+
+	beforeEach(async () => {
+		client = await begin()
+	})
+
+	afterAll(async () => {
+		await rollback(client)
+	})
+
 	it('should return the new user', async () => {
 		const userData = {
 			email: faker.internet.email(),
@@ -50,19 +60,18 @@ describe('addUser', () => {
 		if (missingKey === 'email') delete data.email
 		if (missingKey === 'password') delete data.password
 
-		await expect(addUser(data)).rejects.toStrictEqual({
-			status: 400,
-			message: HttpErrorMessage.EMPTY_FIELDS
+		await expect(addUser(data)).rejects.toMatchObject({
+			status: 400
 		})
 	})
 
-	it('should throw error when trying to add duplicate user', async () => {
+	it('should throw error when trying to add user with existing email', async () => {
 		const userData = {
 			email: faker.internet.email(),
 			name: faker.name.firstName(),
 			password: faker.internet.password()
 		}
-		const res = await addUser(userData)
+		await addUser(userData, client)
 
 		const newUserData = {
 			email: userData.email,
@@ -70,11 +79,8 @@ describe('addUser', () => {
 			password: faker.internet.password()
 		}
 
-		await expect(addUser(newUserData)).rejects.toStrictEqual({
-			status: 400,
-			message: HttpErrorMessage.EMAIL_EXISTS
+		await expect(addUser(newUserData, client)).rejects.toMatchObject({
+			status: 400
 		})
-
-		await query('DELETE FROM users WHERE id = $1', [res.id])
 	})
 })

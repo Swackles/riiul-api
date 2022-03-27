@@ -83,7 +83,7 @@ describe('post', () => {
 	})
 
 	afterAll(async () => {
-		await query('DELETE * FROM users WHERE name = $1 and email = $2', [body.name, body.email])
+		await query('DELETE FROM users WHERE name = $1 and email = $2', [body.name, body.email])
 	})
 })
 
