@@ -103,7 +103,6 @@ async function savePortfolio(portfolio: PortfolioPostBody, client: PoolClient): 
 		portfolio.subjectId,
 		portfolio.title,
 		portfolio.description,
-		portfolio.tags,
 		portfolio.authors,
 		portfolio.priority,
 		portfolio.active,

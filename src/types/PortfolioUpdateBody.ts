@@ -21,7 +21,7 @@ type PortfolioUpdateBody = {
 	subjectId?: number
 	title?: string
 	description?: string
-	tags?: string,
+	tags?: string[],
 	authors?: string,
 	priority?: boolean,
 	active?: boolean,

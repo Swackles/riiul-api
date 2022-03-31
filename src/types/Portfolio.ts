@@ -5,14 +5,14 @@ type Portfolio = {
 	specialityId: number
 	title: string
 	description: string
-	tags: string
+	tags?: string[]
 	authors: string
 	priority: boolean
 	active: boolean
 	createdAt: DateTime
 	updatedAt: DateTime
-	videoLink: string
-	graduationYear: number
+	videoLink?: string
+	graduationYear?: number
 }
 
 export default Portfolio

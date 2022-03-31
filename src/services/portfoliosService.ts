@@ -13,6 +13,7 @@ import File from '../types/File'
 import HttpErrorNotFound from '../errors/HttpErrorNotFound'
 import {begin, commit} from '../database/services/databaseService'
 import {PoolClient} from 'pg'
+import tagDatabaseService from '../database/services/tagDatabaseService'
 
 export async function findPortfolio(id: number, user?: User): Promise<PortfolioResponse> {
 	let portfolio: Portfolio
@@ -26,14 +27,19 @@ export async function findPortfolio(id: number, user?: User): Promise<PortfolioR
 	if (!portfolio) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 	const filesAndImages = await filesDatabaseService.findWithPortfoliosId([portfolio.id])
 
+	const tags = (await tagDatabaseService.findWithPortfolioId(portfolio.id))
+		.map(tag => tag.name)
+
 	function parseFile(file: File) {
 		return {
 			id: file.id,
 			name: file.name + '.' + file.extension,
 		}
 	}
+
 	return {
 		...portfolio,
+		tags,
 		files: filesAndImages.filter(f => f.type === 'PDF').map(parseFile),
 		images: filesAndImages.filter(f => f.type === 'IMG').map(parseFile),
 	}
@@ -97,6 +103,8 @@ export async function addPortfolio(portfolio: PortfolioPostBody): Promise<void> 
 
 	const newPortfolio = await portfoliosDatabaseService.savePortfolio(portfolio, client)
 
+	await Promise.all(portfolio.tags.map(tag => tagDatabaseService.saveTag(tag, newPortfolio.id, client)))
+
 	await Promise.all(portfolio.files.map(async (f, i) => {
 		await saveFile(f.name, f.contents, {id: newPortfolio.id, order: i}, client)
 	}))
@@ -112,6 +120,8 @@ export async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody
 	const client = await begin()
 
 	await portfoliosDatabaseService.updatePortfolio(id, portfolio, client)
+
+	await Promise.all(portfolio.tags.map(tag => tagDatabaseService.saveTag(tag, id, client)))
 
 	if(portfolio.files) await Promise.all(portfolio.files.map(async f => {
 		if (f.type === PortfolioUpdateFileType.DELETE) {

@@ -3,7 +3,7 @@ type PortfolioResponse = {
 	title: string
 	description: string
 	specialityId: number
-	tags: string
+	tags: string[]
 	authors: string
 	priority: boolean
 	active: boolean

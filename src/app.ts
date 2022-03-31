@@ -14,6 +14,7 @@ import HttpErrorBadRequest from './errors/HttpErrorBadRequest'
 import HttpErrorNotFound from './errors/HttpErrorNotFound'
 import asyncHandler from 'express-async-handler'
 import HttpErrorInternalServerError from './errors/HttpErrorInternalServerError'
+import tagsController from './controller/tagsController'
 
 const rollbar = new Rollbar({
 	accessToken: process.env.ROLLBAR_TOKEN,
@@ -40,6 +41,7 @@ app.use('/files', filesController)
 app.use('/subjects', specialitiesController)
 app.use('/users', usersController)
 app.use('/portfolios', portfoliosController)
+app.use('/tags', tagsController)
 
 app.use(asyncHandler(() => {
 	throw new HttpErrorNotFound('NOT_FOUND')
