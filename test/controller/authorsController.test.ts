@@ -2,24 +2,24 @@ import request from 'supertest'
 import app from '../../src/app'
 import {generateJwtToken} from '../../src/services/authenticateService'
 import { query} from '../../src/database/services/databaseService'
-import SubjectDatabaseType from '../../src/database/types/SubjectDatabaseType'
+import AuthorDatabaseType from '../../src/database/types/AuthorDatabaseType'
 import faker from 'faker'
 import PortfolioDatabaseType from '../../src/database/types/PortfolioDatabaseType'
 
-let tags: SubjectDatabaseType[]
+let authors: AuthorDatabaseType[]
 let portfolios: PortfolioDatabaseType[]
 
-const tagRawData = [
-	[faker.random.word() + '_1'],
-	[faker.random.word() + '_2'],
-	[faker.random.word() + '_3'],
-	[faker.random.word() + '_4'],
+const authorRawData = [
+	[faker.name.firstName() + '_1'],
+	[faker.name.firstName() + '_2'],
+	[faker.name.firstName() + '_3'],
+	[faker.name.firstName() + '_4'],
 ]
 
 beforeAll(async () => {
-	tags = await Promise.all(tagRawData.map(async (data) => {
-		const res = await query<SubjectDatabaseType>(
-			'INSERT INTO tags (name) VALUES ($1) RETURNING *',
+	authors = await Promise.all(authorRawData.map(async (data) => {
+		const res = await query<AuthorDatabaseType>(
+			'INSERT INTO authors (name) VALUES ($1) RETURNING *',
 			data)
 
 		return res.rows[0]
@@ -40,22 +40,22 @@ beforeAll(async () => {
 	}))
 
 	const refData = [
-		[tags[0].id, portfolios[0].id],
-		[tags[2].id, portfolios[0].id],
-		[tags[0].id, portfolios[2].id],
-		[tags[3].id, portfolios[1].id],
+		[authors[0].id, portfolios[0].id],
+		[authors[2].id, portfolios[0].id],
+		[authors[0].id, portfolios[2].id],
+		[authors[3].id, portfolios[1].id],
 	]
 
 	await Promise.all(refData.map(async (data) => await query(
-		'INSERT INTO tags_in_portfolio (tag_id, portfolio_id) VALUES ($1, $2) RETURNING *',
+		'INSERT INTO authors_in_portfolio (author_id, portfolio_id) VALUES ($1, $2) RETURNING *',
 		data)
 	))
 })
 
 afterAll(async () => {
 	await query(
-		'DELETE FROM tags where id = ANY($1::int[])',
-		[tags.map(tag => tag.id)]
+		'DELETE FROM authors where id = ANY($1::int[])',
+		[authors.map(tag => tag.id)]
 	)
 
 	await query(
@@ -64,26 +64,26 @@ afterAll(async () => {
 	)
 })
 
-describe('get all tags', () => {
-	it('should respond with all the tags, when logged in', async () => {
+describe('get all authors', () => {
+	it('should respond with all the authors, when logged in', async () => {
 		const response = await request(app)
-			.get('/tags')
+			.get('/authors')
 			.set('Authorization', generateJwtToken(1))
 
 		expect(response).toMatchObject({
 			statusCode: 200,
-			body: tags.sort(({id: a}, {id: b}) => b - a)
-				.map(t => t.name)
+			body: authors.sort(({id: a}, {id: b}) => b - a)
+				.map(a => a.name)
 		})
 	})
 
-	it('should respond with public tags, when not logged in', async () => {
+	it('should respond with public authors, when not logged in', async () => {
 		const response = await request(app)
-			.get('/tags')
+			.get('/authors')
 
 		expect(response).toMatchObject({ statusCode: 200 })
 
-		expect(response.body).not.toContainEqual(tagRawData[1][0])
-		expect(response.body).not.toContainEqual(tagRawData[3][0])
+		expect(response.body).not.toContainEqual(authorRawData[1][0])
+		expect(response.body).not.toContainEqual(authorRawData[3][0])
 	})
 })

@@ -4,7 +4,7 @@ type PortfolioResponse = {
 	description: string
 	specialityId: number
 	tags: string[]
-	authors: string
+	authors: string[]
 	priority: boolean
 	active: boolean
 	images: string[] | {id: number, name: string}[]

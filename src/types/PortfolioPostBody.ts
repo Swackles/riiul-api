@@ -8,7 +8,7 @@ type PortfolioPostBody = {
 	title: string
 	description: string
 	tags: string[],
-	authors: string,
+	authors: string[],
 	priority: boolean,
 	active: boolean,
 	graduationYear?: number,

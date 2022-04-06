@@ -14,6 +14,7 @@ import HttpErrorNotFound from '../errors/HttpErrorNotFound'
 import {begin, commit} from '../database/services/databaseService'
 import {PoolClient} from 'pg'
 import tagDatabaseService from '../database/services/tagDatabaseService'
+import authorDatabaseService from '../database/services/authorDatabaseService'
 
 export async function findPortfolio(id: number, user?: User): Promise<PortfolioResponse> {
 	let portfolio: Portfolio
@@ -30,6 +31,9 @@ export async function findPortfolio(id: number, user?: User): Promise<PortfolioR
 	const tags = (await tagDatabaseService.findWithPortfolioId(portfolio.id))
 		.map(tag => tag.name)
 
+	const authors = (await authorDatabaseService.findWithPortfolioId(portfolio.id))
+		.map(author => author.name)
+
 	function parseFile(file: File) {
 		return {
 			id: file.id,
@@ -40,6 +44,7 @@ export async function findPortfolio(id: number, user?: User): Promise<PortfolioR
 	return {
 		...portfolio,
 		tags,
+		authors,
 		files: filesAndImages.filter(f => f.type === 'PDF').map(parseFile),
 		images: filesAndImages.filter(f => f.type === 'IMG').map(parseFile),
 	}
@@ -105,6 +110,8 @@ export async function addPortfolio(portfolio: PortfolioPostBody): Promise<void> 
 
 	await Promise.all(portfolio.tags.map(tag => tagDatabaseService.saveTag(tag, newPortfolio.id, client)))
 
+	await Promise.all(portfolio.authors.map(author => authorDatabaseService.saveAuthor(author, newPortfolio.id, client)))
+
 	await Promise.all(portfolio.files.map(async (f, i) => {
 		await saveFile(f.name, f.contents, {id: newPortfolio.id, order: i}, client)
 	}))
@@ -122,6 +129,8 @@ export async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody
 	await portfoliosDatabaseService.updatePortfolio(id, portfolio, client)
 
 	await Promise.all(portfolio.tags.map(tag => tagDatabaseService.saveTag(tag, id, client)))
+
+	await Promise.all(portfolio.authors.map(author => authorDatabaseService.saveAuthor(author, id, client)))
 
 	if(portfolio.files) await Promise.all(portfolio.files.map(async f => {
 		if (f.type === PortfolioUpdateFileType.DELETE) {
