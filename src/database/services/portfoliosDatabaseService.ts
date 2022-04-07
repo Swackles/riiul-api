@@ -13,8 +13,6 @@ const UPDATABLE_FIELDS = [
 	'subjectId',
 	'title',
 	'description',
-	'tags',
-	'authors',
 	'priority',
 	'active',
 	'videoLink',
@@ -103,15 +101,14 @@ async function savePortfolio(portfolio: PortfolioPostBody, client: PoolClient): 
 		portfolio.subjectId,
 		portfolio.title,
 		portfolio.description,
-		portfolio.authors,
 		portfolio.priority,
 		portfolio.active,
 		portfolio.videLink,
 		portfolio.graduationYear
 	]
 	const res = await query<PortfolioDatabaseType>('INSERT INTO portfolios' +
-		'(subject_id, title, description, tags, authors, priority, active, video_link, graduation_year)' +
-		'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *', data, client)
+		'(subject_id, title, description, priority, active, video_link, graduation_year)' +
+		'VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', data, client)
 
 	return portfolioMapper(res.rows[0])
 }
