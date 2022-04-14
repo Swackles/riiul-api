@@ -4,10 +4,11 @@ import portfolioMapper from '../mappers/portfolioMapper'
 import Portfolio from '../../types/Portfolio'
 import PortfolioPostBody from '../../types/PortfolioPostBody'
 import PortfolioUpdateBody from '../../types/PortfolioUpdateBody'
-import PortfolioListQuery from '../../types/PortfolioListQuery'
 import HttpErrorNotFound from '../../errors/HttpErrorNotFound'
 import {PoolClient} from 'pg'
 import HttpErrorBadRequest from '../../errors/HttpErrorBadRequest'
+import PortfolioQueryType from '../types/PortfolioQueryType'
+import generateConditionQuery from '../util/generatePortfolioConditionQuery'
 
 const UPDATABLE_FIELDS = [
 	'subjectId',
@@ -18,32 +19,6 @@ const UPDATABLE_FIELDS = [
 	'videoLink',
 	'graduationYear'
 ]
-
-function generateConditionQuery(speciality?: number, q?: string, active?: boolean): { condition: string, data: (string|number|boolean)[]} {
-	const condition = []
-	const data = []
-
-	if (speciality) {
-		data.push(speciality)
-		condition.push(`subject_id = $${data.length}`)
-	}
-	if (q) {
-		data.push(`%${q}%`)
-		condition.push(
-			'(title LIKE <<__data__>> OR description LIKE <<__data__>>)'
-				.replace(/<<__data__>>/g, `$${data.length}`))
-	}
-	if (active) {
-		data.push(active)
-		condition.push('(portfolios.active = <<__data__>> AND subjects.active = <<__data__>>)'
-			.replace(/<<__data__>>/g, `$${data.length}`))
-	}
-
-	return {
-		condition: condition.join(' AND '),
-		data
-	}
-}
 
 async function findPortfolio(id: number, client?: PoolClient): Promise<Portfolio> {
 	const res = await query<PortfolioDatabaseType>('SELECT * FROM portfolios WHERE id = $1', [id], client)
@@ -65,16 +40,20 @@ async function findPortfolioPublic(id: number, client?: PoolClient): Promise<Por
 	return portfolioMapper(res.rows[0])
 }
 
-async function allPortfolios(params?: PortfolioListQuery, client?: PoolClient): Promise<Portfolio[]> {
-	const {condition, data} = generateConditionQuery(
-		parseInt(params?.speciality),
-		params?.q,
-		params?.active ? params.active == 'true' : null
-	)
+async function allPortfolios(params?: PortfolioQueryType, client?: PoolClient): Promise<Portfolio[]> {
+	const {condition, data} = generateConditionQuery(params)
 
-	// noinspection SqlResolve
 	const res = await query<PortfolioDatabaseType>(
-		`SELECT portfolios.* FROM portfolios LEFT JOIN subjects ON subjects.id = portfolios.subject_id ${condition ? 'WHERE ' + condition : ''} order by portfolios.priority desc, portfolios.id desc`,
+		`SELECT res.* FROM (
+    			SELECT DISTINCT ON (portfolios.id) portfolios.* FROM portfolios
+					LEFT JOIN authors_in_portfolio AS aip ON aip.portfolio_id = portfolios.id
+                    LEFT JOIN authors ON authors.id = aip.author_id
+                    LEFT JOIN tags_in_portfolio AS tip ON tip.portfolio_id = portfolios.id
+                    LEFT JOIN tags ON tags.id = tip.tag_id
+					JOIN subjects on subjects.id = portfolios.subject_id
+					${condition ? 'WHERE ' + condition : ''}
+    				order by portfolios.id desc
+    			) as res ORDER BY res.priority desc`,
 		data,
 		client
 	)
@@ -82,10 +61,10 @@ async function allPortfolios(params?: PortfolioListQuery, client?: PoolClient): 
 	return res.rows.map(portfolioMapper)
 }
 
-async function allPortfoliosPublic(params?: PortfolioListQuery, client?: PoolClient): Promise<Portfolio[]> {
+async function allPortfoliosPublic(params?: PortfolioQueryType, client?: PoolClient): Promise<Portfolio[]> {
 	params = {
 		...params,
-		active: 'true'
+		active: true
 	}
 
 	return await allPortfolios(params, client)

@@ -15,6 +15,7 @@ import {begin, commit} from '../database/services/databaseService'
 import {PoolClient} from 'pg'
 import tagDatabaseService from '../database/services/tagDatabaseService'
 import authorDatabaseService from '../database/services/authorDatabaseService'
+import PortfolioQueryType from '../database/types/PortfolioQueryType'
 
 export async function findPortfolio(id: number, user?: User): Promise<PortfolioResponse> {
 	let portfolio: Portfolio
@@ -52,11 +53,18 @@ export async function findPortfolio(id: number, user?: User): Promise<PortfolioR
 
 export async function getPortfolios(user?: User, query?: PortfolioListQuery, client?: PoolClient): Promise<PortfolioListResponse[]> {
 	let portfolios: Portfolio[]
+	const dataBaseQuery: PortfolioQueryType = {
+		q: query.q,
+		tags: query.tags ? query.tags.split(',') : [],
+		specialities: query.speciality ? query.speciality.split(',') : [],
+		authors: query.authors ? query.authors.split(',') : [],
+		active: query.active ? query.active === 'true' : undefined,
+	}
 
 	if (user) {
-		portfolios = await portfoliosDatabaseService.allPortfolios(query, client)
+		portfolios = await portfoliosDatabaseService.allPortfolios(dataBaseQuery, client)
 	} else {
-		portfolios = await portfoliosDatabaseService.allPortfoliosPublic(query, client)
+		portfolios = await portfoliosDatabaseService.allPortfoliosPublic(dataBaseQuery, client)
 	}
 
 	const images = (await filesDatabaseService.findWithPortfoliosId(portfolios.map(p => p.id), client))
