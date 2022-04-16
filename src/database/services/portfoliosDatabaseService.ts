@@ -20,21 +20,21 @@ const UPDATABLE_FIELDS = [
 	'graduationYear'
 ]
 
-async function findPortfolio(id: number, client?: PoolClient): Promise<Portfolio> {
-	const res = await query<PortfolioDatabaseType>('SELECT * FROM portfolios WHERE id = $1', [id], client)
+async function findPortfolioWithTitle(title: string, client?: PoolClient): Promise<Portfolio> {
+	const res = await query<PortfolioDatabaseType>('SELECT * FROM portfolios WHERE LOWER(title) = LOWER($1)', [title], client)
 	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 
 	return portfolioMapper(res.rows[0])
 }
 
-async function findPortfolioPublic(id: number, client?: PoolClient): Promise<Portfolio> {
+async function findPortfolioPublicWithTitle(title: string, client?: PoolClient): Promise<Portfolio> {
 
 	const res = await query<PortfolioDatabaseType>(
 		'SELECT *, portfolios.id as id FROM portfolios ' +
 		'LEFT JOIN subjects ON subjects.id = portfolios.subject_id ' +
-		'WHERE portfolios.id = $1 ' +
+		'WHERE LOWER(portfolios.title) = LOWER($1) ' +
 		'AND portfolios.active = $2 ' +
-		'AND subjects.active = $2', [id, true], client)
+		'AND subjects.active = $2', [title, true], client)
 	if (res.rowCount === 0) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 
 	return portfolioMapper(res.rows[0])
@@ -114,8 +114,8 @@ async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody, clien
 export default {
 	allPortfolios,
 	allPortfoliosPublic,
-	findPortfolio,
-	findPortfolioPublic,
+	findPortfolioWithTitle,
+	findPortfolioPublicWithTitle,
 	deletePortfolio,
 	savePortfolio,
 	updatePortfolio

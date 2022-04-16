@@ -1,10 +1,12 @@
 import portfoliosDatabaseService from '../../src/database/services/portfoliosDatabaseService'
 import {DateTime} from 'luxon'
-import faker from 'faker'
 import filesDatabaseService from '../../src/database/services/filesDatabaseService'
 import File from '../../src/types/File'
 import User from '../../src/types/User'
-import {getPortfolios} from '../../src/services/portfoliosService'
+import {findPortfolio, getPortfolios} from '../../src/services/portfoliosService'
+import tagDatabaseService from '../../src/database/services/tagDatabaseService'
+import authorDatabaseService from '../../src/database/services/authorDatabaseService'
+import faker from 'faker'
 
 const MOCK_PORTFOLIOS = [
 	{
@@ -51,32 +53,120 @@ const MOCK_PORTFOLIOS = [
 	}
 ]
 
+const MOCK_PORTFOLIO = {
+	id: 1,
+	specialityId: 1,
+	title: 'portfolio-1',
+	description: 'Lorem Ipsum',
+	priority: false,
+	active: true,
+	createdAt: DateTime.now(),
+	updatedAt: DateTime.now(),
+	videoLink: 'mock-link',
+	graduationYear: 2021,
+}
+
 const MOCK_FILES = [
 	{
+		id: 3,
 		portfolioId: 1,
 		type: 'IMG',
 		extension: 'jpg',
 		name: 'test-image-1'
 	},
 	{
+		id: 4,
 		portfolioId: 1,
 		type: 'PDF',
 		extension: 'pdf',
 		name: 'test-pdf-1'
 	},
 	{
+		id: 5,
 		portfolioId: 2,
 		type: 'IMG',
 		extension: 'jpg',
 		name: 'test-image-2'
 	},
 	{
+		id: 6,
 		portfolioId: 3,
 		type: 'IMG',
 		extension: 'jpg',
 		name: 'test-image-3'
 	}
 ] as unknown as File[]
+
+describe('findPortfolio', () => {
+	let findPortfoliosSpy: jest.SpyInstance
+	let findPortfoliosPublicSpy: jest.SpyInstance
+	let findFilesWithPortfoliosIdSpy: jest.SpyInstance
+	let findTagsWithPortfoliosIdSpy: jest.SpyInstance
+	let findAuthorsWithPortfoliosIdSpy: jest.SpyInstance
+
+	beforeEach(async () => {
+		findPortfoliosSpy = jest.spyOn(portfoliosDatabaseService, 'findPortfolioWithTitle')
+			.mockReturnValue(Promise.resolve(MOCK_PORTFOLIO))
+		findPortfoliosPublicSpy = jest.spyOn(portfoliosDatabaseService, 'findPortfolioPublicWithTitle')
+			.mockReturnValue(Promise.resolve(MOCK_PORTFOLIO))
+		findFilesWithPortfoliosIdSpy = jest.spyOn(filesDatabaseService, 'findWithPortfoliosId')
+			.mockReturnValue(Promise.resolve(MOCK_FILES))
+		findTagsWithPortfoliosIdSpy = jest.spyOn(tagDatabaseService, 'findWithPortfolioId')
+			.mockReturnValue(Promise.resolve([{ id: 1, name: 'test-tag-1' }, { id: 1, name: 'test-tag-1' }]))
+		findAuthorsWithPortfoliosIdSpy = jest.spyOn(authorDatabaseService, 'findWithPortfolioId')
+			.mockReturnValue(Promise.resolve([{ id: 1, name: 'test-author-1' }, { id: 1, name: 'test-author-1' }]))
+	})
+
+	it('should call findPortfolioWithTitle when user is present', async () => {
+		const res = await findPortfolio('portfolio-1', { id: 1 } as User)
+
+		expect(findPortfoliosSpy).toHaveBeenNthCalledWith(1, 'portfolio-1')
+		expect(findPortfoliosPublicSpy).not.toHaveBeenCalled()
+		expect(findFilesWithPortfoliosIdSpy).toHaveBeenNthCalledWith(1, [1])
+		expect(findTagsWithPortfoliosIdSpy).toHaveBeenNthCalledWith(1, 1)
+		expect(findAuthorsWithPortfoliosIdSpy).toHaveBeenNthCalledWith(1, 1)
+
+		expect(res).toEqual({
+			id: 1,
+			specialityId: 1,
+			title: 'portfolio-1',
+			description: 'Lorem Ipsum',
+			priority: false,
+			active: true,
+			tags: ['test-tag-1', 'test-tag-1'],
+			authors: ['test-author-1', 'test-author-1'],
+			images: [{ id:3, name: 'test-image-1.jpg' }, { id: 5, name: 'test-image-2.jpg' }, { id: 6, name: 'test-image-3.jpg' }],
+			files: [{ id:4, name: 'test-pdf-1.pdf' }],
+			videoLink: 'mock-link',
+			graduationYear: 2021,
+		})
+	})
+
+	it('should call findPortfolioPublicWithTitle when user is not present', async () => {
+		const res = await findPortfolio('portfolio-1')
+
+		expect(findPortfoliosSpy).not.toHaveBeenCalled()
+		expect(findPortfoliosPublicSpy).toHaveBeenNthCalledWith(1, 'portfolio-1')
+		expect(findFilesWithPortfoliosIdSpy).toHaveBeenNthCalledWith(1, [1])
+		expect(findTagsWithPortfoliosIdSpy).toHaveBeenNthCalledWith(1, 1)
+		expect(findAuthorsWithPortfoliosIdSpy).toHaveBeenNthCalledWith(1, 1)
+
+		expect(res).toEqual({
+			id: 1,
+			specialityId: 1,
+			title: 'portfolio-1',
+			description: 'Lorem Ipsum',
+			priority: false,
+			tags: ['test-tag-1', 'test-tag-1'],
+			authors: ['test-author-1', 'test-author-1'],
+			images: [{ id:3, name: 'test-image-1.jpg' }, { id: 5, name: 'test-image-2.jpg' }, { id: 6, name: 'test-image-3.jpg' }],
+			files: [{ id:4, name: 'test-pdf-1.pdf' }],
+			videoLink: 'mock-link',
+			graduationYear: 2021,
+		})
+
+	})
+})
 
 describe('getPortfolios', () => {
 	let allPortfoliosSpy: jest.SpyInstance

@@ -79,6 +79,58 @@ afterAll(async () => {
 	await rollback(client)
 })
 
+describe('findPortfolioWithTitle', () => {
+	it('should return user when searching for an active user', async () => {
+
+		const res = await portfoliosDatabaseService.findPortfolioWithTitle('Title1', client)
+
+		expect(res).toMatchObject({
+			title: 'Title1',
+			specialityId: 2,
+			description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at',
+			priority: false,
+			active: true,
+			videoLink: null
+		})
+	})
+
+	it('should return user when searching for an inactive user', async () => {
+
+		const res = await portfoliosDatabaseService.findPortfolioWithTitle('Title2', client)
+
+		expect(res).toMatchObject({
+			title: 'Title2',
+			specialityId: 3,
+			description: 'Title2Lorem ipsum dolor sit amet, consectetur adipisTitle2cing elit. Phasellus at',
+			priority: false,
+			active: false,
+			videoLink: null
+		})
+	})
+})
+
+describe('findPortfolioPublicWithTitle', () => {
+	it('should return user when searching for an active user', async () => {
+
+		const res = await portfoliosDatabaseService.findPortfolioPublicWithTitle('Title1', client)
+
+		expect(res).toMatchObject({
+			title: 'Title1',
+			specialityId: 2,
+			description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at',
+			priority: false,
+			active: true,
+			videoLink: null
+		})
+	})
+
+	it('should not return user when searching for an inactive user', async () => {
+
+		await expect(portfoliosDatabaseService.findPortfolioPublicWithTitle('Title2', client))
+			.rejects.toMatchObject({ status: 404, message: 'PORTFOLIO_NOT_FOUND' })
+	})
+})
+
 describe('allPortfoliosPublic', () => {
 	it('should return all public portfolios', async () => {
 		const res = await portfoliosDatabaseService.allPortfoliosPublic(undefined, client)

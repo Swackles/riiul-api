@@ -17,8 +17,8 @@ import PortfolioResponse from '../types/PortfolioResponse'
 
 const router = express.Router()
 
-router.get<{id: number}, PortfolioResponse>('/:id([0-9]+)', optionalAuthentication, asyncHandler(async (req, res) => {
-	res.status(200).send(await findPortfolio(req.params.id, res.locals.user))
+router.get<{name: string}, PortfolioResponse>('/:name', optionalAuthentication, asyncHandler(async (req, res) => {
+	res.status(200).send(await findPortfolio(req.params.name, res.locals.user))
 }))
 
 router.get<never, PortfolioListResponse[], never, PortfolioListQuery, never>('/', optionalAuthentication, asyncHandler(async (req, res) => {

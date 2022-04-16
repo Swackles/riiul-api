@@ -10,23 +10,21 @@ import PortfolioUpdateBody from '../types/PortfolioUpdateBody'
 import PortfolioUpdateFileType from '../enums/PortfolioUpdateFileType'
 import PortfolioListQuery from '../types/PortfolioListQuery'
 import File from '../types/File'
-import HttpErrorNotFound from '../errors/HttpErrorNotFound'
 import {begin, commit} from '../database/services/databaseService'
 import {PoolClient} from 'pg'
 import tagDatabaseService from '../database/services/tagDatabaseService'
 import authorDatabaseService from '../database/services/authorDatabaseService'
 import PortfolioQueryType from '../database/types/PortfolioQueryType'
 
-export async function findPortfolio(id: number, user?: User): Promise<PortfolioResponse> {
+export async function findPortfolio(title: string, user?: User): Promise<PortfolioResponse> {
 	let portfolio: Portfolio
 
 	if (user) {
-		portfolio = await portfoliosDatabaseService.findPortfolio(id)
+		portfolio = await portfoliosDatabaseService.findPortfolioWithTitle(title)
 	} else {
-		portfolio = await portfoliosDatabaseService.findPortfolioPublic(id)
+		portfolio = await portfoliosDatabaseService.findPortfolioPublicWithTitle(title)
 	}
 
-	if (!portfolio) throw new HttpErrorNotFound('PORTFOLIO_NOT_FOUND')
 	const filesAndImages = await filesDatabaseService.findWithPortfoliosId([portfolio.id])
 
 	const tags = (await tagDatabaseService.findWithPortfolioId(portfolio.id))
@@ -41,6 +39,11 @@ export async function findPortfolio(id: number, user?: User): Promise<PortfolioR
 			name: file.name + '.' + file.extension,
 		}
 	}
+
+	delete portfolio.createdAt
+	delete portfolio.updatedAt
+
+	if (!user) delete portfolio.active
 
 	return {
 		...portfolio,
@@ -76,7 +79,7 @@ export async function getPortfolios(user?: User, query?: PortfolioListQuery, cli
 			id: p.id,
 			title: p.title,
 			specialityId: p.specialityId,
-			image: images.find(i => i.id === p.id).name,
+			image: images?.find(i => i.id === p.id)?.name,
 		}
 		if (user) data.active = p.active
 
