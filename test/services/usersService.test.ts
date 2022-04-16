@@ -1,7 +1,8 @@
-import {addUser} from '../../src/services/usersService'
+import {addUser, deleteUser} from '../../src/services/usersService'
 import * as faker from 'faker'
 import {begin, query, rollback} from '../../src/database/services/databaseService'
 import {PoolClient} from 'pg'
+import User from '../../src/types/User'
 
 describe('addUser', () => {
 	let client: PoolClient
@@ -81,6 +82,15 @@ describe('addUser', () => {
 
 		await expect(addUser(newUserData, client)).rejects.toMatchObject({
 			status: 400
+		})
+	})
+})
+
+describe('deleteUser', () => {
+	it('should throw 401 error when trying to delete current user', async () => {
+		await expect(deleteUser(0, { id: 0} as User)).rejects.toMatchObject({
+			status: 400,
+			message: 'USER_CANNOT_DELETE_HIMSELF'
 		})
 	})
 })

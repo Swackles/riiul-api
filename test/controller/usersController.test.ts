@@ -151,4 +151,17 @@ describe('delete', () => {
 
 		expect(response.statusCode).toBe(401)
 	})
+
+	it('should respond with 400, when user tries to delete itself', async () => {
+		const response = await request(app)
+			.delete('/users/' + id)
+			.set('Authorization', generateJwtToken(id))
+
+		expect(response.body).toStrictEqual({
+			status: 400,
+			message: 'USER_CANNOT_DELETE_HIMSELF'
+		})
+
+		expect(response.statusCode).toBe(400)
+	})
 })

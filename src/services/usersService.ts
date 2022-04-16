@@ -43,6 +43,8 @@ export async function updateUser(id: number, user: UsersPostBody): Promise<void>
 	await usersDatabaseService.updateUser(id, user)
 }
 
-export async function deleteUser(id: number): Promise<void> {
+export async function deleteUser(id: number, user?: User): Promise<void> {
+	if (user?.id == id) throw new HttpErrorBadRequest('USER_CANNOT_DELETE_HIMSELF')
+
 	await usersDatabaseService.deleteUser(id)
 }

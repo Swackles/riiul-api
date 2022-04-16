@@ -27,7 +27,7 @@ router.put<{id: number }, never, UsersPostBody>('/:id([0-9]+)', validateAuthenti
 }))
 
 router.delete<{id: number}, never>('/:id([0-9]+)', validateAuthentication, asyncHandler(async (req, res) => {
-	await deleteUser(req.params.id)
+	await deleteUser(req.params.id, res.locals.user)
 	res.status(200).send()
 }))
 
