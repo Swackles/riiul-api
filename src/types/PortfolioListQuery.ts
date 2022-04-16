@@ -1,6 +1,6 @@
 type PortfolioListQuery = {
 	q?: string
-	speciality?: string
+	specialities?: string
 	active?: string
 	authors?: string
 	tags?: string

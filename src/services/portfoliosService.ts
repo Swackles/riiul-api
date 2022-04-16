@@ -54,11 +54,11 @@ export async function findPortfolio(id: number, user?: User): Promise<PortfolioR
 export async function getPortfolios(user?: User, query?: PortfolioListQuery, client?: PoolClient): Promise<PortfolioListResponse[]> {
 	let portfolios: Portfolio[]
 	const dataBaseQuery: PortfolioQueryType = {
-		q: query.q,
-		tags: query.tags ? query.tags.split(',') : [],
-		specialities: query.speciality ? query.speciality.split(',') : [],
-		authors: query.authors ? query.authors.split(',') : [],
-		active: query.active ? query.active === 'true' : undefined,
+		q: query?.q,
+		tags: query?.tags ? query.tags.split(',') : undefined,
+		specialities: query?.specialities ? query.specialities.split(',') : undefined,
+		authors: query?.authors ? query.authors.split(',') : undefined,
+		active: query?.active ? query.active === 'true' : undefined,
 	}
 
 	if (user) {
