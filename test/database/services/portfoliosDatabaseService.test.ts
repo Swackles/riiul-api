@@ -89,8 +89,7 @@ describe('findPortfolioWithTitle', () => {
 			specialityId: 2,
 			description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at',
 			priority: false,
-			active: true,
-			videoLink: null
+			active: true
 		})
 	})
 
@@ -103,8 +102,7 @@ describe('findPortfolioWithTitle', () => {
 			specialityId: 3,
 			description: 'Title2Lorem ipsum dolor sit amet, consectetur adipisTitle2cing elit. Phasellus at',
 			priority: false,
-			active: false,
-			videoLink: null
+			active: false
 		})
 	})
 })
@@ -119,8 +117,7 @@ describe('findPortfolioPublicWithTitle', () => {
 			specialityId: 2,
 			description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at',
 			priority: false,
-			active: true,
-			videoLink: null
+			active: true
 		})
 	})
 

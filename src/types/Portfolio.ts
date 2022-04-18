@@ -11,7 +11,6 @@ type Portfolio = {
 	active: boolean
 	createdAt: DateTime
 	updatedAt: DateTime
-	videoLink?: string
 	graduationYear?: number
 }
 

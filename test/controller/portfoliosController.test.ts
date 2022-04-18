@@ -7,6 +7,7 @@ import SubjectDatabaseType from '../../src/database/types/SubjectDatabaseType'
 import tagDatabaseService from '../../src/database/services/tagDatabaseService'
 import authorDatabaseService from '../../src/database/services/authorDatabaseService'
 import {PoolClient} from 'pg'
+import PORTFOLIO_EXTERNAL_LINK from '../../src/enums/PORTFOLIO_EXTERNAL_LINK'
 
 describe('find one portfolio', () => {
 	let client: PoolClient
@@ -19,7 +20,14 @@ describe('find one portfolio', () => {
 			priority: false,
 			active: true,
 			tags: ['tag3', 'tag1', 'tag2'],
-			authors: ['author3', 'author1', 'author2']
+			authors: ['author3', 'author1', 'author2'],
+			externalLink: [
+				{
+					title: faker.random.word(),
+					link: faker.internet.url(),
+					type: PORTFOLIO_EXTERNAL_LINK.EXTERNAL
+				}
+			]
 		},
 		{
 			title: faker.random.word(),
@@ -28,7 +36,19 @@ describe('find one portfolio', () => {
 			priority: false,
 			active: false,
 			tags: ['tag2'],
-			authors: ['author1', 'author2']
+			authors: ['author1', 'author2'],
+			externalLink: [
+				{
+					title: faker.random.word(),
+					link: faker.internet.url(),
+					type: PORTFOLIO_EXTERNAL_LINK.EXTERNAL
+				},
+				{
+					title: faker.random.word(),
+					link: faker.internet.url(),
+					type: PORTFOLIO_EXTERNAL_LINK.YOUTUBE
+				}
+			]
 		},
 		{
 			title: faker.random.words(2),
@@ -37,7 +57,14 @@ describe('find one portfolio', () => {
 			priority: false,
 			active: false,
 			tags: ['tag2'],
-			authors: ['author2']
+			authors: ['author2'],
+			externalLink: [
+				{
+					title: faker.random.word(),
+					link: faker.internet.url(),
+					type: PORTFOLIO_EXTERNAL_LINK.EXTERNAL
+				}
+			]
 		}
 	]
 

@@ -15,6 +15,7 @@ import {PoolClient} from 'pg'
 import tagDatabaseService from '../database/services/tagDatabaseService'
 import authorDatabaseService from '../database/services/authorDatabaseService'
 import PortfolioQueryType from '../database/types/PortfolioQueryType'
+import portfolioExternalLinksDatabaseService from '../database/services/portfolioExternalLinksDatabaseService'
 
 export async function findPortfolio(title: string, user?: User): Promise<PortfolioResponse> {
 	let portfolio: Portfolio
@@ -33,6 +34,8 @@ export async function findPortfolio(title: string, user?: User): Promise<Portfol
 	const authors = (await authorDatabaseService.findWithPortfolioId(portfolio.id))
 		.map(author => author.name)
 
+	const externalLinks = await portfolioExternalLinksDatabaseService.findWithPortfolioId(portfolio.id)
+
 	function parseFile(file: File) {
 		return {
 			id: file.id,
@@ -47,6 +50,7 @@ export async function findPortfolio(title: string, user?: User): Promise<Portfol
 
 	return {
 		...portfolio,
+		externalLinks,
 		tags,
 		authors,
 		files: filesAndImages.filter(f => f.type === 'PDF').map(parseFile),
@@ -123,6 +127,8 @@ export async function addPortfolio(portfolio: PortfolioPostBody): Promise<void> 
 
 	await Promise.all(portfolio.authors.map(author => authorDatabaseService.saveAuthor(author, newPortfolio.id, client)))
 
+	await Promise.all(portfolio.externalLinks.map(link => portfolioExternalLinksDatabaseService.savePortfolioExternalLink(newPortfolio.id, link, client)))
+
 	await Promise.all(portfolio.files.map(async (f, i) => {
 		await saveFile(f.name, f.contents, {id: newPortfolio.id, order: i}, client)
 	}))
@@ -144,30 +150,44 @@ export async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody
 	await Promise.all(portfolio.authors.map(author => authorDatabaseService.saveAuthor(author, id, client)))
 
 	if(portfolio.files) await Promise.all(portfolio.files.map(async f => {
-		if (f.type === PortfolioUpdateFileType.DELETE) {
+		if (f.modificationType === PortfolioUpdateFileType.DELETE) {
 			await deleteFile(f.id, client)
 		}
-		else if (f.type === PortfolioUpdateFileType.UPDATE) {
+		else if (f.modificationType === PortfolioUpdateFileType.UPDATE) {
 			await updateFileOrder(f.id, f.order, client)
 		}
-		else if (f.type === PortfolioUpdateFileType.NEW) {
+		else if (f.modificationType === PortfolioUpdateFileType.NEW) {
 			const file = await saveFile(f.name, f.contents, {id, order: f.order}, client)
 			return file.name
 		}
 	}))
 
 	if(portfolio.images) await Promise.all(portfolio.images.map(async (f) => {
-		if (f.type === PortfolioUpdateFileType.DELETE) {
+		if (f.modificationType === PortfolioUpdateFileType.DELETE) {
 			await deleteFile(f.id, client)
 		}
-		else if (f.type === PortfolioUpdateFileType.UPDATE) {
+		else if (f.modificationType === PortfolioUpdateFileType.UPDATE) {
 			await updateFileOrder(f.id, f.order, client)
 		}
-		else if (f.type === PortfolioUpdateFileType.NEW) {
+		else if (f.modificationType === PortfolioUpdateFileType.NEW) {
 			const file = await saveFile(f.name, f.contents, {id, order: f.order}, client)
 			return file.name
 		}
 	}))
+
+	if(portfolio.externalLinks) await Promise.all(
+		portfolio.externalLinks.map(
+			async (link) => {
+				if (link.modificationType === PortfolioUpdateFileType.DELETE) {
+					await portfolioExternalLinksDatabaseService.deletePortfolioExternalLink(link.id, client)
+				}
+				else if (link.modificationType === PortfolioUpdateFileType.UPDATE || link.modificationType === PortfolioUpdateFileType.NEW) {
+
+					await portfolioExternalLinksDatabaseService.savePortfolioExternalLink(id, link, client)
+				}
+			}
+		)
+	)
 
 	await commit(client)
 }

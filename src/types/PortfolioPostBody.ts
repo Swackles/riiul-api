@@ -1,3 +1,5 @@
+import PortfolioExternalLinkSave from './PortfolioExternalLinkSave'
+
 export type Files = {
 	name: string
 	contents: string
@@ -12,7 +14,7 @@ type PortfolioPostBody = {
 	priority: boolean,
 	active: boolean,
 	graduationYear?: number,
-	videLink?: string,
+	externalLinks: PortfolioExternalLinkSave[],
 	images: Files[]
 	files?: Files[]
 }

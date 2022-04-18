@@ -1,33 +1,40 @@
 import {Files} from './PortfolioPostBody'
 import PortfolioUpdateFileType from '../enums/PortfolioUpdateFileType'
+import PortfolioExternalLinkSave from './PortfolioExternalLinkSave'
 
-export type PortfolioDeleteFiles = {
+type DeletePortfolioAddons<T> = T & {
 	id: number
-	type: PortfolioUpdateFileType.DELETE
+	modificationType: PortfolioUpdateFileType.DELETE
 }
 
-export type PortfolioUpdateFile = {
+type UpdatePortfolioAddons<T> = T & {
 	id: number
-    order: number
-	type: PortfolioUpdateFileType.UPDATE
+	modificationType: PortfolioUpdateFileType.UPDATE
 }
 
-export type PortfolioNewFile = Files & {
-	order: number
-	type: PortfolioUpdateFileType.NEW
+type AddPortfolioAddons<T> = T & {
+	modificationType: PortfolioUpdateFileType.NEW
 }
+
+type ModifyPortfolioAddons<A, U, D> =
+	AddPortfolioAddons<A> |
+	UpdatePortfolioAddons<U> |
+	DeletePortfolioAddons<D>
+
+export type ModifyPortfolioFile = ModifyPortfolioAddons<Files & { order: number }, { order: number }, unknown>
+export type ModifyPortfolioLink = ModifyPortfolioAddons<PortfolioExternalLinkSave, PortfolioExternalLinkSave, unknown>
 
 type PortfolioUpdateBody = {
 	subjectId?: number
 	title?: string
 	description?: string
-	tags?: string[],
-	authors?: string[],
-	priority?: boolean,
-	active?: boolean,
-	images?: (PortfolioDeleteFiles | PortfolioUpdateFile | PortfolioNewFile)[]
-	files?: (PortfolioDeleteFiles | PortfolioUpdateFile | PortfolioNewFile)[]
-	videoLink?: string
+	tags?: string[]
+	authors?: string[]
+	priority?: boolean
+	active?: boolean
+	images?: ModifyPortfolioFile[]
+	files?:  ModifyPortfolioFile[]
+	externalLinks?: ModifyPortfolioLink[]
 	graduationYear?: number
 }
 

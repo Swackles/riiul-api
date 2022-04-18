@@ -6,7 +6,6 @@ type PortfolioDatabaseType = BaseType & {
 	description: string
 	priority: boolean
 	active: boolean
-	video_link?: string
 	graduation_year?: number
 }
 

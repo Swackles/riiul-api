@@ -1,3 +1,5 @@
+import PortfolioExternalLink from './PortfolioExternalLink'
+
 type PortfolioResponse = {
 	id: number
 	title: string
@@ -7,6 +9,7 @@ type PortfolioResponse = {
 	authors: string[]
 	priority: boolean
 	active: boolean
+	externalLinks: PortfolioExternalLink[]
 	images: string[] | {id: number, name: string}[]
 	files: string[] | {id: number, name: string}[]
 }
