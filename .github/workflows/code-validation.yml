@@ -21,6 +21,7 @@ jobs:
         run: npm run build
 
   lint:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: checking repository out
@@ -37,6 +38,7 @@ jobs:
         run: npm run lint
 
   test:
+    needs: setup
     runs-on: ubuntu-latest
     services:
       postgres:
