@@ -2,10 +2,21 @@ name: code-validation
 on: push
 
 jobs:
-  setup:
+  code-validation:
     runs-on: ubuntu-latest
     container: node:14-alpine
-
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: checking repository out
         uses: actions/checkout@v3
@@ -13,41 +24,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-  eslint:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
       - name: eslint validation
-        run: npx eslint
+        run: npm run eslint
 
-  setup-database:
-    needs: setup
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
+      - name: run database migrations
+        run: npm run migrations
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: riiul-test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-        - name: run database migrations
-          run: npm run migrations
-          env:
-            DATABASE_URL: postgresql://postgres:postgres@localhost:5432/riiul-test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
 
-  test:
-    needs: setup-database
-    runs-on: ubuntu-latest
-    steps:
       - name: run tests
         run: npm run test
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/riiul-test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
           JWT_TOKEN: JWT_TOKEN
           SALT_ROUNDS: 1
