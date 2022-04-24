@@ -7,6 +7,8 @@ async function jestGlobalSetup(): Promise<void> {
 
 	await query<UserDatabaseType>('INSERT INTO users (id, name, email, password) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO NOTHING',
 		[1, 'test_username', 'test.test@gmail.com', password])
+
+	await query('SELECT setval(\'users_id_seq\', (SELECT MAX(id) FROM users)+1)')
 }
 
 export default jestGlobalSetup
