@@ -30,11 +30,7 @@ jobs:
           POSTGRES_DB: test
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - name: checking repository out
         uses: actions/checkout@v3
@@ -44,11 +40,6 @@ jobs:
 
       - name: build
         run: npm run build
-
-      - name: run database migrations
-        run: npm run migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
 
       - name: run tests
         run: npm run test
