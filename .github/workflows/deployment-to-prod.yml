@@ -1,4 +1,4 @@
-name: code-validation
+name: deployment-to-prod
 on:
   - push
   - workflow_dispatch
