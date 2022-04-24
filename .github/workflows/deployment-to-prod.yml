@@ -12,7 +12,7 @@ jobs:
       - name: checking repository out
         uses: actions/checkout@v3
 
-      - uses: ./.github/workflows/code-validation.yml
+      - uses: ./.github/workflows/code-validation
 
       - name: Upload files
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
