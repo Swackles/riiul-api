@@ -1,0 +1,42 @@
+name: code-validation
+on: push
+
+jobs:
+  code-validation:
+    runs-on: ubuntu-latest
+    container: node:14-alpine
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: riiul-test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: checking repository out
+        uses: actions/checkout@
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: eslint validation
+        run: npx eslint
+
+      - name: run migrations on database
+        run: npm run migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/riiul-test
+
+      - name: run tests
+        run: npm run test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/riiul-test
+          JWT_TOKEN: JWT_TOKEN
+          SALT_ROUNDS: 1

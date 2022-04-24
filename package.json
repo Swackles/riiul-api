@@ -7,7 +7,8 @@
     "migrations": "node-pg-migrate -m ./dist/migrations  --ignore-pattern .*\\.js\\.map up",
     "start": "node ./dist/app.js",
     "test": "jest",
-    "migrate": "node-pg-migrate -m ./src/migrations -j ts"
+    "migrate": "node-pg-migrate -m ./src/migrations -j ts",
+    "lint": "eslint test src"
   },
   "engines": {
     "node": "14.18.x",
