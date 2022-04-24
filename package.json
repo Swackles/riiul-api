@@ -11,8 +11,8 @@
     "lint": "eslint test src"
   },
   "engines": {
-    "node": "14.18.x",
-    "npm": "7.17.x"
+    "node": "16",
+    "npm": "8"
   },
   "dependencies": {
     "@types/luxon": "^2.0.5",

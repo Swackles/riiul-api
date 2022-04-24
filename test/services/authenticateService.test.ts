@@ -27,13 +27,13 @@ describe('login', () => {
 	it('should throw an error if email doesn\'t exist', () => {
 		expect(login('TEST', 'TEST_PASSWORD'))
 			.rejects
-			.toEqual('INVALID_EMAIL_OR_PASSWORD')
+			.toEqual({ status: 401 })
 	})
 
 	it('should throw an error if password doesn\'t match the email', () => {
 		expect(login('TEST_EMAIL', 'TEST'))
 			.rejects
-			.toEqual('INVALID_EMAIL_OR_PASSWORD')
+			.toEqual('{ status: 401 }')
 	})
 })
 
