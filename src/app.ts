@@ -28,7 +28,7 @@ const app = express()
 
 app.use(cors())
 
-app.use(logger('dev'))
+if (process.env.NODE_ENV !== 'test') app.use(logger('dev'))
 app.use(express.json({limit: '50mb'}))
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
