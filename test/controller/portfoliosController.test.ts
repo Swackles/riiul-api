@@ -8,6 +8,7 @@ import tagDatabaseService from '../../src/database/services/tagDatabaseService'
 import authorDatabaseService from '../../src/database/services/authorDatabaseService'
 import {PoolClient} from 'pg'
 import PORTFOLIO_EXTERNAL_LINK from '../../src/enums/PORTFOLIO_EXTERNAL_LINK'
+import portfolioExternalLinksDatabaseService from '../../src/database/services/portfolioExternalLinksDatabaseService'
 
 describe('find one portfolio', () => {
 	let client: PoolClient
@@ -21,7 +22,7 @@ describe('find one portfolio', () => {
 			active: true,
 			tags: ['tag3', 'tag1', 'tag2'],
 			authors: ['author3', 'author1', 'author2'],
-			externalLink: [
+			externalLinks: [
 				{
 					title: faker.random.word(),
 					link: faker.internet.url(),
@@ -37,7 +38,7 @@ describe('find one portfolio', () => {
 			active: false,
 			tags: ['tag2'],
 			authors: ['author1', 'author2'],
-			externalLink: [
+			externalLinks: [
 				{
 					title: faker.random.word(),
 					link: faker.internet.url(),
@@ -58,7 +59,7 @@ describe('find one portfolio', () => {
 			active: false,
 			tags: ['tag2'],
 			authors: ['author2'],
-			externalLink: [
+			externalLinks: [
 				{
 					title: faker.random.word(),
 					link: faker.internet.url(),
@@ -71,13 +72,14 @@ describe('find one portfolio', () => {
 	const portfolioIds: number[] = []
 	const tagIds: number[] = []
 	const authorIds: number[] = []
+	const externalLinkIds: number[] = []
 
 	beforeAll(async () => {
 		try {
 			client = await begin()
 
 			for (const portfolio of ALL_PORTFOLIOS) {
-				const {title, specialityId, description, priority, active, tags, authors} = portfolio
+				const {title, specialityId, description, priority, active, tags, authors, externalLinks} = portfolio
 				const { rows } = await query<SubjectDatabaseType>(
 					'INSERT INTO portfolios (title, subject_id, description, priority, active) VALUES ($1, $2, $3, $4, $5) RETURNING *',
 					[title, specialityId, description, priority, active],
@@ -93,6 +95,10 @@ describe('find one portfolio', () => {
 					const {id} = await authorDatabaseService.saveAuthor(author, rows[0].id, client)
 					authorIds.push(id)
 				}
+				for (const externalLink of externalLinks) {
+					const {id} = await portfolioExternalLinksDatabaseService.savePortfolioExternalLink(rows[0].id, externalLink, client)
+					externalLinkIds.push(id)
+				}
 			}
 
 			await commit(client)
@@ -106,6 +112,7 @@ describe('find one portfolio', () => {
 		await query(`DELETE FROM portfolios WHERE id IN (${portfolioIds.join(', ')})`, [])
 		await query(`DELETE FROM tags WHERE id IN (${tagIds.join(', ')})`, [])
 		await query(`DELETE FROM authors WHERE id IN (${authorIds.join(', ')})`, [])
+		await query(`DELETE FROM portfolio_external_links WHERE id IN (${externalLinkIds.join(', ')})`, [])
 	})
 
 	it('should return 200 when looking for active portfolio, while logged in', async () => {

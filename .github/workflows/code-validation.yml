@@ -2,10 +2,27 @@ name: code-validation
 on: push
 
 jobs:
-  code-validation:
+  setup:
     runs-on: ubuntu-latest
     container: node:14-alpine
 
+    steps:
+      - name: checking repository out
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+  eslint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: eslint validation
+        run: npx eslint
+
+  setup-database:
+    needs: setup
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres
@@ -18,22 +35,16 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
-      - name: checking repository out
-        uses: actions/checkout@v3
+        - name: run database migrations
+          run: npm run migrations
+          env:
+            DATABASE_URL: postgresql://postgres:postgres@localhost:5432/riiul-test
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: eslint validation
-        run: npx eslint
-
-      - name: run migrations on database
-        run: npm run migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/riiul-test
-
+  test:
+    needs: setup-database
+    runs-on: ubuntu-latest
+    steps:
       - name: run tests
         run: npm run test
         env:
