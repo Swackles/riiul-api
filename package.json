@@ -67,7 +67,6 @@
     },
     "globalSetup": "./src/scripts/jestGlobalSetup.ts",
     "globalTeardown": "./src/scripts/jestGlobalTeardown.ts",
-    "collectCoverage": true,
     "testRegex": "/test/.*/.*.test.ts?$",
     "globals": {
       "ts-jest": {
