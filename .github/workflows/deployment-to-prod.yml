@@ -1,0 +1,41 @@
+name: code-validation
+on:
+  - push
+  - workflow_dispatch
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    container: node:14-alpine
+
+    steps:
+      - name: code validation
+      - uses: ./.github/workflows/code-validation
+
+      - name: install sshpass
+        run: apt-get install sshpass
+
+  ssh -t < user >@< ip > -p < a-port > ssh < host > -p< other-port >
+      - name: Setup tunnel
+        run: ssh -L 50001 ${{secrets.TIGU_USERNAME}}@tigu.hk.tlu.ee
+
+      - name: Upload files
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: riiul.hk.tlu.ee
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 2222
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/test/**
+            **/src/**
+            **/files/**
+            .env*
+            readme.md
+            tsconfig.json
+            docker-compose.yml
+            babel.config.js
+            .eslint*
