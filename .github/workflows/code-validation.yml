@@ -41,9 +41,14 @@ jobs:
       - name: build
         run: npm run build
 
+      - name: run database migrations
+        run: npm run migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@postgres:${{ job.services.postgres.ports[5432] }}/test
+
       - name: run tests
         run: npm run test
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          DATABASE_URL: postgresql://postgres:postgres@postgres:${{ job.services.postgres.ports[5432] }}/test
           JWT_TOKEN: JWT_TOKEN
           SALT_ROUNDS: 1
