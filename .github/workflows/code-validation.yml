@@ -1,5 +1,7 @@
 name: code-validation
-on: push
+on:
+  - push
+  - workflow_call
 
 jobs:
   code-validation:
@@ -13,7 +15,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test
         ports:
-          - "54321:5432"
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
