@@ -1,7 +1,6 @@
 name: deployment-to-prod
 on:
   - push
-  - workflow_dispatch
 
 jobs:
   lint:
@@ -53,7 +52,7 @@ jobs:
           SALT_ROUNDS: 1
 
   upload-files:
-    needs: [lint, test]
+    needs: lint
     runs-on: ubuntu-latest
     container: node:14-alpine
 
