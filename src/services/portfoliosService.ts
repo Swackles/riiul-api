@@ -6,8 +6,8 @@ import Portfolio from '../types/Portfolio'
 import PortfolioPostBody from '../types/PortfolioPostBody'
 import PortfolioResponse from '../types/PortfolioResponse'
 import {deleteFile, saveFile, updateFileOrder} from './filesService'
-import PortfolioUpdateBody from '../types/PortfolioUpdateBody'
-import PortfolioUpdateFileType from '../enums/PortfolioUpdateFileType'
+import PortfolioUpdateBody, {ModifyPortfolioAddons} from '../types/PortfolioUpdateBody'
+import FORM_MODIFiCATION_TYPE from '../enums/FORM_MODIFiCATION_TYPE'
 import PortfolioListQuery from '../types/PortfolioListQuery'
 import File from '../types/File'
 import {begin, commit} from '../database/services/databaseService'
@@ -16,6 +16,7 @@ import tagDatabaseService from '../database/services/tagDatabaseService'
 import authorDatabaseService from '../database/services/authorDatabaseService'
 import PortfolioQueryType from '../database/types/PortfolioQueryType'
 import portfolioExternalLinksDatabaseService from '../database/services/portfolioExternalLinksDatabaseService'
+import MODIFICATION_ORDER from '../enums/MODIFICATION_ORDER'
 
 export async function findPortfolio(title: string, user?: User): Promise<PortfolioResponse> {
 	let portfolio: Portfolio
@@ -145,49 +146,65 @@ export async function updatePortfolio(id: number, portfolio: PortfolioUpdateBody
 
 	await portfoliosDatabaseService.updatePortfolio(id, portfolio, client)
 
-	await Promise.all(portfolio.tags.map(tag => tagDatabaseService.saveTag(tag, id, client)))
+	function modificationOrder(a: ModifyPortfolioAddons<unknown, unknown>, b: ModifyPortfolioAddons<unknown, unknown>): number {
+		return MODIFICATION_ORDER[a.modificationType] - MODIFICATION_ORDER[b.modificationType]
+	}
 
-	await Promise.all(portfolio.authors.map(author => authorDatabaseService.saveAuthor(author, id, client)))
+	if (portfolio.tags) for (const tag of portfolio.tags.sort(modificationOrder as never)) {
+		switch (tag.modificationType) {
+		case (FORM_MODIFiCATION_TYPE.DELETE):
+			await tagDatabaseService.removeTagFromPortfolio(tag.name, id, client)
+			break
+		case (FORM_MODIFiCATION_TYPE.NEW):
+			await tagDatabaseService.saveTag(tag.name, id, client)
+			break
+		}
+	}
 
-	if(portfolio.files) await Promise.all(portfolio.files.map(async f => {
-		if (f.modificationType === PortfolioUpdateFileType.DELETE) {
-			await deleteFile(f.id, client)
+	if (portfolio.authors) for (const author of portfolio.authors.sort(modificationOrder as never)) {
+		switch (author.modificationType) {
+		case (FORM_MODIFiCATION_TYPE.DELETE):
+			await authorDatabaseService.removeAuthorFromPortfolio(author.name, id, client)
+			break
+		case (FORM_MODIFiCATION_TYPE.NEW):
+			await authorDatabaseService.saveAuthor(author.name, id, client)
+			break
 		}
-		else if (f.modificationType === PortfolioUpdateFileType.UPDATE) {
-			await updateFileOrder(f.id, f.order, client)
-		}
-		else if (f.modificationType === PortfolioUpdateFileType.NEW) {
-			const file = await saveFile(f.name, f.contents, {id, order: f.order}, client)
-			return file.name
-		}
-	}))
+	}
 
-	if(portfolio.images) await Promise.all(portfolio.images.map(async (f) => {
-		if (f.modificationType === PortfolioUpdateFileType.DELETE) {
-			await deleteFile(f.id, client)
+	if (portfolio.files) for (const file of portfolio.files.sort(modificationOrder)) {
+		if (file.modificationType === FORM_MODIFiCATION_TYPE.DELETE) {
+			await deleteFile(file.id, client)
 		}
-		else if (f.modificationType === PortfolioUpdateFileType.UPDATE) {
-			await updateFileOrder(f.id, f.order, client)
+		else if (file.modificationType === FORM_MODIFiCATION_TYPE.UPDATE) {
+			await updateFileOrder(file.id, file.order, client)
 		}
-		else if (f.modificationType === PortfolioUpdateFileType.NEW) {
-			const file = await saveFile(f.name, f.contents, {id, order: f.order}, client)
-			return file.name
+		else if (file.modificationType === FORM_MODIFiCATION_TYPE.NEW) {
+			await saveFile(file.name, file.contents, {id, order: file.order}, client)
 		}
-	}))
+	}
 
-	if(portfolio.externalLinks) await Promise.all(
-		portfolio.externalLinks.map(
-			async (link) => {
-				if (link.modificationType === PortfolioUpdateFileType.DELETE) {
-					await portfolioExternalLinksDatabaseService.deletePortfolioExternalLink(link.id, client)
-				}
-				else if (link.modificationType === PortfolioUpdateFileType.UPDATE || link.modificationType === PortfolioUpdateFileType.NEW) {
+	if (portfolio.images) for (const image of portfolio.images.sort(modificationOrder)) {
+		if (image.modificationType === FORM_MODIFiCATION_TYPE.DELETE) {
+			await deleteFile(image.id, client)
+		}
+		else if (image.modificationType === FORM_MODIFiCATION_TYPE.UPDATE) {
+			await updateFileOrder(image.id, image.order, client)
+		}
+		else if (image.modificationType === FORM_MODIFiCATION_TYPE.NEW) {
+			await saveFile(image.name, image.contents, {id, order: image.order}, client)
+		}
+	}
 
-					await portfolioExternalLinksDatabaseService.savePortfolioExternalLink(id, link, client)
-				}
-			}
-		)
-	)
+	if (portfolio.externalLinks) for (const link of portfolio.externalLinks.sort(modificationOrder)) {
+		if (link.modificationType === FORM_MODIFiCATION_TYPE.DELETE) {
+			await portfolioExternalLinksDatabaseService.deletePortfolioExternalLink(link.id, client)
+		}
+		else if (link.modificationType === FORM_MODIFiCATION_TYPE.UPDATE || link.modificationType === FORM_MODIFiCATION_TYPE.NEW) {
+
+			await portfolioExternalLinksDatabaseService.savePortfolioExternalLink(id, link, client)
+		}
+	}
 
 	await commit(client)
 }

@@ -54,9 +54,20 @@ async function saveTag(tagName: string, portfolioId: number, client?: PoolClient
 	return tagMapper(tags[0])
 }
 
+async function removeTagFromPortfolio(name: string, portfolioId: number, client?: PoolClient): Promise<void> {
+	await query(
+		`DELETE FROM tags_in_portfolio WHERE portfolio_id = $1 AND tag_id = (
+			SELECT id FROM tags WHERE name = $2
+		)`,
+		[portfolioId, name],
+		client
+	)
+}
+
 export default {
 	allTags,
 	allTagsPublic,
 	findWithPortfolioId,
 	saveTag,
+	removeTagFromPortfolio
 }

@@ -1,41 +1,56 @@
 import {Files} from './PortfolioPostBody'
-import PortfolioUpdateFileType from '../enums/PortfolioUpdateFileType'
+import FORM_MODIFICATION_TYPE from '../enums/FORM_MODIFiCATION_TYPE'
 import PortfolioExternalLinkSave from './PortfolioExternalLinkSave'
 
-type DeletePortfolioAddons<T> = T & {
+type DeletePortfolioAddons = {
 	id: number
-	modificationType: PortfolioUpdateFileType.DELETE
+	modificationType: FORM_MODIFICATION_TYPE.DELETE
 }
 
 type UpdatePortfolioAddons<T> = T & {
 	id: number
-	modificationType: PortfolioUpdateFileType.UPDATE
+	modificationType: FORM_MODIFICATION_TYPE.UPDATE
 }
 
 type AddPortfolioAddons<T> = T & {
-	modificationType: PortfolioUpdateFileType.NEW
+	modificationType: FORM_MODIFICATION_TYPE.NEW
 }
 
-type ModifyPortfolioAddons<A, U, D> =
+export type ModifyPortfolioAddons<A, U> =
 	AddPortfolioAddons<A> |
 	UpdatePortfolioAddons<U> |
-	DeletePortfolioAddons<D>
+	DeletePortfolioAddons
 
-export type ModifyPortfolioFile = ModifyPortfolioAddons<Files & { order: number }, { order: number }, unknown>
-export type ModifyPortfolioLink = ModifyPortfolioAddons<PortfolioExternalLinkSave, PortfolioExternalLinkSave, unknown>
+export type PortfolioFileUpdateBody = ModifyPortfolioAddons<Files & { order: number }, { order: number }>
+export type PortfolioExternalLinkUpdateBody = ModifyPortfolioAddons<PortfolioExternalLinkSave, PortfolioExternalLinkSave>
 
-type PortfolioUpdateBody = {
+export type PortfolioNewKeywordUpdateForm = {
+	name: string
+	modificationType: FORM_MODIFICATION_TYPE.NEW
+}
+
+export type PortfolioDeleteKeywordUpdateForm = {
+	name: string
+	modificationType: FORM_MODIFICATION_TYPE.DELETE
+}
+
+export type PortfolioKeywordUpdateForm = (
+	PortfolioDeleteKeywordUpdateForm |
+	PortfolioNewKeywordUpdateForm
+	)
+
+export type PortfolioUpdateBody = {
 	subjectId?: number
 	title?: string
 	description?: string
-	tags?: string[]
-	authors?: string[]
+	tags?: PortfolioKeywordUpdateForm[]
+	authors?: PortfolioKeywordUpdateForm[]
 	priority?: boolean
 	active?: boolean
-	images?: ModifyPortfolioFile[]
-	files?:  ModifyPortfolioFile[]
-	externalLinks?: ModifyPortfolioLink[]
+	externalLinks?: PortfolioExternalLinkUpdateBody[]
 	graduationYear?: number
+	images?: PortfolioFileUpdateBody[]
+	files?: PortfolioFileUpdateBody[]
 }
 
 export default PortfolioUpdateBody

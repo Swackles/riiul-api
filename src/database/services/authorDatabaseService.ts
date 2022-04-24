@@ -54,9 +54,20 @@ async function saveAuthor(authorName: string, portfolioId: number, client?: Pool
 	return authorMapper(authors[0])
 }
 
+async function removeAuthorFromPortfolio(name: string, portfolioId: number, client?: PoolClient): Promise<void> {
+	await query(
+		`DELETE FROM authors_in_portfolio WHERE portfolio_id = $1 AND author_id = (
+			SELECT id FROM tags WHERE name = $2
+		)`,
+		[portfolioId, name],
+		client
+	)
+}
+
 export default {
 	allAuthors,
 	allAuthorsPublic,
 	findWithPortfolioId,
 	saveAuthor,
+	removeAuthorFromPortfolio
 }
