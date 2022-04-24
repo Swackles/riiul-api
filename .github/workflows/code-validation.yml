@@ -1,7 +1,5 @@
 name: code-validation
-on:
-  - push
-  - workflow_call
+on: push
 
 jobs:
   lint:
@@ -18,7 +16,6 @@ jobs:
         run: npm run lint
 
   test:
-    needs: lint
     runs-on: ubuntu-latest
     container: node:14-alpine
     services:
