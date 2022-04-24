@@ -6,7 +6,7 @@
     "build": "tsc",
     "migrations": "node-pg-migrate -m ./dist/migrations  --ignore-pattern .*\\.js\\.map up",
     "start": "node ./dist/app.js",
-    "test": "jest --forceExit --detectOpenHandles --maxWorkers=2 --runInBand",
+    "test": "jest --forceExit --detectOpenHandles --runInBand",
     "migrate": "node-pg-migrate -m ./src/migrations -j ts",
     "lint": "eslint test src"
   },
