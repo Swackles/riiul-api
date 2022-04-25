@@ -2,6 +2,7 @@ import {query} from '../../src/database/services/databaseService'
 import {generateJwtToken, login, validateToken} from '../../src/services/authenticateService'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import HttpErrorBadRequest from '../../src/errors/HttpErrorBadRequest'
 
 describe('login', () => {
 	const data = ['TEST_NAME', 'AUTH_TEST_EMAIL', bcrypt.hashSync('TEST_PASSWORD', 10)]
@@ -27,13 +28,13 @@ describe('login', () => {
 	it('should throw an error if email doesn\'t exist', () => {
 		expect(login('TEST', 'TEST_PASSWORD'))
 			.rejects
-			.toEqual({ status: 401 })
+			.toThrow(HttpErrorBadRequest)
 	})
 
 	it('should throw an error if password doesn\'t match the email', () => {
 		expect(login('TEST_EMAIL', 'TEST'))
 			.rejects
-			.toEqual('{ status: 401 }')
+			.toThrow(HttpErrorBadRequest)
 	})
 })
 
