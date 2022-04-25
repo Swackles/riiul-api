@@ -72,7 +72,6 @@ jobs:
 
       - name: run tests
         run: npm run test
-        shell: pwsh
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/test
           JWT_TOKEN: JWT_TOKEN

@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken'
 import HttpErrorBadRequest from '../../src/errors/HttpErrorBadRequest'
 
 describe('login', () => {
-	const data = ['TEST_NAME', 'AUTH_TEST_EMAIL', bcrypt.hashSync('TEST_PASSWORD', 10)]
+	const data = ['TEST_NAME', 'AUTH_TEST_EMAIL', bcrypt.hashSync('TEST_PASSWORD', parseInt(process.env.SALT_ROUNDS))]
 	beforeAll(async () => {
 		await query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3)', data)
 	})
