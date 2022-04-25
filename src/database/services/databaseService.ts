@@ -16,11 +16,13 @@ export async function begin(): Promise<PoolClient> {
 export async function commit(client: PoolClient): Promise<void> {
 	await client.query('COMMIT')
 	client.release()
+	await pool.end()
 }
 
 export async function rollback(client: PoolClient): Promise<void> {
 	await client.query('ROLLBACK')
 	client.release()
+	await pool.end()
 }
 
 export async function query<T>(query: string, params?: (string|number|boolean|number[]|string[]|boolean[])[], client?: PoolClient): ReturnType<T> {
