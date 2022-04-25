@@ -67,45 +67,33 @@ jobs:
       - name: run database migrations
         run: npm run migrations
         env:
-          DATABASE_URL: postgresql://postgres:postgres@postgres:${{ job.services.postgres.ports[5432] }}/test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/test
 
       - name: run tests
         run: npm run test
         env:
-          DATABASE_URL: postgresql://postgres:postgres@postgres:${{ job.services.postgres.ports[5432] }}/test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/test
           JWT_TOKEN: JWT_TOKEN
           SALT_ROUNDS: 1
 
-  upload-files:
-    needs: [lint, test]
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/cache@v3
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
         with:
-          path: |
-            ./dist/*
-            ./node_modules/*
-          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-
-      - name: Upload files
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
-        with:
-          server: riiul.hk.tlu.ee
+          host: riiul.hk.tlu.ee
           username: ${{ secrets.SFTP_USERNAME }}
           password: ${{ secrets.SFTP_PASSWORD }}
+          proxy_host: tigu.hk.tlu.ee
+          proxy_password: ${{ secrets.TIGU_PASSWORD }}
+          proxy_username: ${{ secrets.TIGU_USERNAME }}
+          proxy_port: 22
           port: 2222
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/test/**
-            **/src/**
-            **/files/**
-            .env*
-            readme.md
-            tsconfig.json
-            docker-compose.yml
-            babel.config.js
-            .eslint*
+          script: |
+            cd ~/riiul-backend
+            npm ci
+            npm run build
+            npm run migrations
+            pm2 restart riiul-backend
