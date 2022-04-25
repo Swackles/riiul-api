@@ -93,6 +93,7 @@ jobs:
           port: 2222
           script: |
             cd ~/riiul-backend
+            git pull
             npm ci
             npm run build
             npm run migrations
