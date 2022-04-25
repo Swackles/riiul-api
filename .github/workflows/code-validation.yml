@@ -3,7 +3,7 @@ on: push
 
 jobs:
   setup:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -26,7 +26,7 @@ jobs:
 
   lint:
     needs: setup
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -42,7 +42,7 @@ jobs:
 
   test:
     needs: setup
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres
@@ -72,7 +72,7 @@ jobs:
 
       - name: run tests
         run: npm run test
-        shell: bash
+        shell: pwsh
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/test
           JWT_TOKEN: JWT_TOKEN
