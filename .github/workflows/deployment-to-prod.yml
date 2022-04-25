@@ -95,4 +95,4 @@ jobs:
             npm ci
             npm run build
             npm run migrations
-            pm2 restart riiul-backend
+            pm2 restart riiul-backend --update-env
