@@ -1,5 +1,10 @@
 name: deployment-to-prod
-on: push
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v[0-9]{2}\.[0-9]{2}\.[0-9]{4}
 
 jobs:
   setup:
