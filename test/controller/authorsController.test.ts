@@ -5,6 +5,7 @@ import { query} from '../../src/database/services/databaseService'
 import AuthorDatabaseType from '../../src/database/types/AuthorDatabaseType'
 import faker from 'faker'
 import PortfolioDatabaseType from '../../src/database/types/PortfolioDatabaseType'
+import pool from '../../src/database/services/poolService'
 
 let authors: AuthorDatabaseType[]
 let portfolios: PortfolioDatabaseType[]
@@ -62,6 +63,8 @@ afterAll(async () => {
 		'DELETE FROM portfolios where id = ANY($1::int[])',
 		[portfolios.map(portfolio => portfolio.id)]
 	)
+
+	await pool.end()
 })
 
 describe('get all authors', () => {

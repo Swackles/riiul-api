@@ -3,6 +3,7 @@ import usersDatabaseService, {findUserWithEmail, saveUser, updateUser} from '../
 import faker from 'faker'
 import UserDatabaseType from '../../../src/database/types/UserDatabaseType'
 import UsersPostBody from '../../../src/types/UsersPostBody'
+import pool from '../../../src/database/services/poolService'
 
 describe('allUsers', () => {
 	it('should return all users', async () => {
@@ -23,6 +24,8 @@ describe('getUser', () => {
 
 	afterEach(async () => {
 		await query('DELETE FROM users WHERE email = $1', [data[1]])
+
+		await pool.end()
 	})
 
 	it('should return a user', async () => {
@@ -55,6 +58,8 @@ describe('findUserWithEmail', () => {
 
 	afterAll(async () => {
 		await query('DELETE FROM users WHERE name = $1 AND email = $2 AND password = $3', data)
+
+		await pool.end()
 	})
 
 	it('should return a user', async () => {
@@ -109,6 +114,8 @@ describe('updateUser', () => {
 
 	afterEach(async () => {
 		await query('DELETE FROM users WHERE email = $1', [data[1]])
+
+		await pool.end()
 	})
 
 	test.each`
@@ -143,6 +150,8 @@ describe('deleteUser', () => {
 
 	afterEach(async () => {
 		await query('DELETE FROM users WHERE id = $1', [id])
+
+		await pool.end()
 	})
 
 	it('should delete the user', async () => {

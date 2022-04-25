@@ -6,6 +6,7 @@ import portfolioExternalLinksDatabaseService from '../../../src/database/service
 import PortfolioExternalLink from '../../../src/types/PortfolioExternalLink'
 import PortfolioExternalLinkDatabaseType from '../../../src/database/types/PortfolioExternalLinkDatabaseType'
 import PORTFOLIO_EXTERNAL_LINK from '../../../src/enums/PORTFOLIO_EXTERNAL_LINK'
+import pool from '../../../src/database/services/poolService'
 
 let client: PoolClient
 let externalLinks: (PortfolioExternalLink)[]
@@ -50,6 +51,8 @@ beforeEach(async () => {
 
 afterEach(async () => {
 	await rollback(client)
+
+	await pool.end()
 })
 
 it('should delete external links, when deleting portfolio', async () => {

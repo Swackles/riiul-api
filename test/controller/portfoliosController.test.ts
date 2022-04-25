@@ -9,6 +9,7 @@ import authorDatabaseService from '../../src/database/services/authorDatabaseSer
 import {PoolClient} from 'pg'
 import PORTFOLIO_EXTERNAL_LINK from '../../src/enums/PORTFOLIO_EXTERNAL_LINK'
 import portfolioExternalLinksDatabaseService from '../../src/database/services/portfolioExternalLinksDatabaseService'
+import pool from '../../src/database/services/poolService'
 
 describe('find one portfolio', () => {
 	let client: PoolClient
@@ -113,6 +114,8 @@ describe('find one portfolio', () => {
 		await query(`DELETE FROM tags WHERE id IN (${tagIds.join(', ')})`, [])
 		await query(`DELETE FROM authors WHERE id IN (${authorIds.join(', ')})`, [])
 		await query(`DELETE FROM portfolio_external_links WHERE id IN (${externalLinkIds.join(', ')})`, [])
+
+		await pool.end()
 	})
 
 	it('should return 200 when looking for active portfolio, while logged in', async () => {

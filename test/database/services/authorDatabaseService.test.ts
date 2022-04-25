@@ -5,6 +5,7 @@ import faker from 'faker'
 import PortfolioDatabaseType from '../../../src/database/types/PortfolioDatabaseType'
 import Author from '../../../src/types/Author'
 import authorDatabaseService from '../../../src/database/services/authorDatabaseService'
+import pool from '../../../src/database/services/poolService'
 
 let client: PoolClient
 let authors: Author[]
@@ -62,6 +63,8 @@ beforeEach(async () => {
 
 afterEach(async () => {
 	await rollback(client)
+
+	await pool.end()
 })
 
 describe('allAuthors', () => {

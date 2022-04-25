@@ -5,6 +5,7 @@ import keywordDatabaseService from '../../../src/database/services/tagDatabaseSe
 import faker from 'faker'
 import PortfolioDatabaseType from '../../../src/database/types/PortfolioDatabaseType'
 import Tag from '../../../src/types/Tag'
+import pool from '../../../src/database/services/poolService'
 
 let client: PoolClient
 let tags: Tag[]
@@ -62,6 +63,8 @@ beforeEach(async () => {
 
 afterEach(async () => {
 	await rollback(client)
+
+	await pool.end()
 })
 
 describe('allTags', () => {
