@@ -58,13 +58,6 @@
   },
   "jest": {
     "clearMocks": true,
-    "coverageThreshold": {
-      "global": {
-        "branches": 80,
-        "functions": 80,
-        "lines": 80
-      }
-    },
     "globalSetup": "./src/scripts/jestGlobalSetup.ts",
     "globalTeardown": "./src/scripts/jestGlobalTeardown.ts",
     "testRegex": "/test/.*/.*.test.ts?$",
