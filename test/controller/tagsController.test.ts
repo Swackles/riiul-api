@@ -5,7 +5,6 @@ import { query} from '../../src/database/services/databaseService'
 import SubjectDatabaseType from '../../src/database/types/SubjectDatabaseType'
 import faker from 'faker'
 import PortfolioDatabaseType from '../../src/database/types/PortfolioDatabaseType'
-import pool from '../../src/database/services/poolService'
 
 let tags: SubjectDatabaseType[]
 let portfolios: PortfolioDatabaseType[]
@@ -63,8 +62,6 @@ afterAll(async () => {
 		'DELETE FROM portfolios where id = ANY($1::int[])',
 		[portfolios.map(portfolio => portfolio.id)]
 	)
-
-	await pool.end()
 })
 
 describe('get all tags', () => {
