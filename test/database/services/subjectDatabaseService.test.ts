@@ -63,7 +63,7 @@ describe('updateSubject', () => {
 
 		expect(subject).toBeDefined()
 
-		expect(DateTime.fromJSDate(subject.rows[0].updated_at).toMillis()).toBeLessThanOrEqual(now.toMillis())
+		expect(DateTime.fromJSDate(subject.rows[0].updated_at).toMillis()).toBeGreaterThanOrEqual(now.toMillis())
 		expect(subject.rows[0]).toMatchObject({ id: 1, name: 'UPDATE_SUBJECT_1', active: true })
 	})
 

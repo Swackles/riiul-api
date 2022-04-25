@@ -227,7 +227,7 @@ describe('updateFile', () => {
 			originalName: data[3]
 		})
 
-		expect(res.updatedAt.toMillis()).toBeLessThanOrEqual(now.toMillis())
+		expect(res.updatedAt.toMillis()).toBeGreaterThanOrEqual(now.toMillis())
 	})
 
 	it('should throw not found error if file isn\'t found', async () => {
