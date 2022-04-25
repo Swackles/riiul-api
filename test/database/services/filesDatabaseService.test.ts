@@ -5,7 +5,6 @@ import faker from 'faker'
 import FileDatabaseType from '../../../src/database/types/FileDatabaseType'
 import {DateTime} from 'luxon'
 import {PoolClient} from 'pg'
-import pool from '../../../src/database/services/poolService';
 
 describe('findWithNameAndExtension', () => {
 	let client: PoolClient
@@ -32,8 +31,6 @@ describe('findWithNameAndExtension', () => {
 
 	afterAll(async () => {
 		await rollback(client)
-
-		await pool.end()
 	})
 
 	it('should return a file', async () => {
@@ -86,8 +83,6 @@ describe('findWithPortfoliosId', () => {
 
 	afterAll(async () => {
 		await rollback(client)
-
-		await pool.end()
 	})
 
 	test.each`
@@ -130,8 +125,6 @@ describe('save', () => {
 
 	afterEach(async () => {
 		await rollback(client)
-
-		await pool.end()
 	})
 
 	it('should return a newly created file', async () => {
@@ -174,8 +167,6 @@ describe('delete', () => {
 
 	afterEach(async () => {
 		await rollback(client)
-
-		await pool.end()
 	})
 
 	it('should delete the file', async () => {
@@ -221,8 +212,6 @@ describe('updateFile', () => {
 
 	afterEach(async () => {
 		await rollback(client)
-
-		await pool.end()
 	})
 
 	it('should update the file', async () => {

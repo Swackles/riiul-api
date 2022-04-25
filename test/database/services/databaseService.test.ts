@@ -23,8 +23,6 @@ describe('query', () => {
 
 		afterEach(async () => {
 			client.release()
-
-			await pool.end()
 		})
 
 		it('should not preform start and commit query', async () => {

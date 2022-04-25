@@ -4,7 +4,6 @@ import SubjectDatabaseType from '../../../src/database/types/SubjectDatabaseType
 import portfoliosDatabaseService from '../../../src/database/services/portfoliosDatabaseService'
 import tagDatabaseService from '../../../src/database/services/tagDatabaseService'
 import authorDatabaseService from '../../../src/database/services/authorDatabaseService'
-import pool from '../../../src/database/services/poolService'
 
 let client: PoolClient
 
@@ -78,8 +77,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
 	await rollback(client)
-
-	await pool.end()
 })
 
 describe('findPortfolioWithTitle', () => {

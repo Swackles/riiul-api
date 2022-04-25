@@ -4,7 +4,6 @@ import * as faker from 'faker'
 import {query} from '../../src/database/services/databaseService'
 import {generateJwtToken} from '../../src/services/authenticateService'
 import UserDatabaseType from '../../src/database/types/UserDatabaseType'
-import pool from '../../src/database/services/poolService'
 
 describe('get all users', () => {
 	it('should return 200 response', async () => {
@@ -35,8 +34,6 @@ describe('find one user', () => {
 
 	afterAll(async () => {
 		await query('DELETE FROM users WHERE id = $1', [id])
-
-		await pool.end()
 	})
 
 	it('should return 200 response', async () => {
@@ -87,8 +84,6 @@ describe('post', () => {
 
 	afterAll(async () => {
 		await query('DELETE FROM users WHERE name = $1 and email = $2', [body.name, body.email])
-
-		await pool.end()
 	})
 })
 
@@ -107,8 +102,6 @@ describe('update', () => {
 
 	afterEach(async () => {
 		await query('DELETE FROM users WHERE id = $1', [id])
-
-		await pool.end()
 	})
 
 	it('should return 200 response', async () => {
@@ -141,8 +134,6 @@ describe('delete', () => {
 
 	afterEach(async () => {
 		await query('DELETE FROM users WHERE id = $1', [id])
-
-		await pool.end()
 	})
 
 	it('should return 200 response', async () => {

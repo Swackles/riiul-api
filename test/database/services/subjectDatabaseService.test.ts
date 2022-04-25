@@ -4,7 +4,6 @@ import SubjectDatabaseType from '../../../src/database/types/SubjectDatabaseType
 import SubjectUpdateBody from '../../../src/types/SubjectUpdateBody'
 import {PoolClient} from 'pg'
 import {DateTime} from 'luxon'
-import pool from '../../../src/database/services/poolService'
 
 let client: PoolClient
 
@@ -25,8 +24,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
 	await rollback(client)
-
-	await pool.end()
 })
 
 describe('allSubjects', () => {
