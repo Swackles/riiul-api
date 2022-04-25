@@ -63,6 +63,7 @@ jobs:
             ./dist/*
             ./node_modules/*
           key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+      - run: node -v
 
       - name: run database migrations
         run: npm run migrations
