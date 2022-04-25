@@ -1,6 +1,5 @@
 name: deployment-to-prod
-on:
-  - push
+on: push
 
 jobs:
   setup:
@@ -75,7 +74,6 @@ jobs:
           SALT_ROUNDS: 1
   deploy:
     needs: [lint, test]
-    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: executing remote ssh commands using password
