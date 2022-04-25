@@ -6,12 +6,13 @@
     "build": "tsc",
     "migrations": "node-pg-migrate -m ./dist/migrations  --ignore-pattern .*\\.js\\.map up",
     "start": "node ./dist/app.js",
-    "test": "jest",
-    "migrate": "node-pg-migrate -m ./src/migrations -j ts"
+    "test": "jest --forceExit --detectOpenHandles --runInBand",
+    "migrate": "node-pg-migrate -m ./src/migrations -j ts",
+    "lint": "eslint test src"
   },
   "engines": {
-    "node": "14.18.x",
-    "npm": "7.17.x"
+    "node": "16",
+    "npm": "8"
   },
   "dependencies": {
     "@types/luxon": "^2.0.5",
@@ -57,16 +58,8 @@
   },
   "jest": {
     "clearMocks": true,
-    "coverageThreshold": {
-      "global": {
-        "branches": 80,
-        "functions": 80,
-        "lines": 80
-      }
-    },
     "globalSetup": "./src/scripts/jestGlobalSetup.ts",
     "globalTeardown": "./src/scripts/jestGlobalTeardown.ts",
-    "collectCoverage": true,
     "testRegex": "/test/.*/.*.test.ts?$",
     "globals": {
       "ts-jest": {

@@ -1,0 +1,105 @@
+name: deployment-to-prod
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v[0-9]{2}\.[0-9]{2}\.[0-9]{4}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ./dist/*
+            ./node_modules/*
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: build
+        run: npm run build
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ./dist/*
+            ./node_modules/*
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
+      - name: eslint validation
+        run: npm run lint
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ./dist/*
+            ./node_modules/*
+          key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
+      - name: run database migrations
+        run: npm run migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/test
+
+      - name: run tests
+        run: npm run test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/test
+          JWT_TOKEN: JWT_TOKEN
+          SALT_ROUNDS: 1
+  deploy:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        with:
+          host: riiul.hk.tlu.ee
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          proxy_host: tigu.hk.tlu.ee
+          proxy_password: ${{ secrets.TIGU_PASSWORD }}
+          proxy_username: ${{ secrets.TIGU_USERNAME }}
+          proxy_port: 22
+          port: 2222
+          envs: DATABASE_URL
+          script: |
+            export DATABASE_URL=$DATABASE_URL
+            cd ~/riiul-backend
+            git pull
+            npm ci
+            npm run build
+            npm run migrations
+            pm2 restart riiul-backend --update-env

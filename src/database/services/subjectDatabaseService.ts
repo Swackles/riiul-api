@@ -30,7 +30,7 @@ export async function saveSubject(subject: SubjectPostBody, client?: PoolClient)
 }
 
 export async function updateSubject(id: number, subject: SubjectUpdateBody, client?: PoolClient): Promise<Subject> {
-	const values: Array<string | number | boolean> = [id, new Date().toISOString()]
+	const values: Array<string | number | boolean> = [id]
 	const fields = []
 
 	for (const [key, value] of Object.entries(subject)) {
@@ -42,7 +42,7 @@ export async function updateSubject(id: number, subject: SubjectUpdateBody, clie
 
 	if (fields.length === 0) throw new HttpErrorBadRequest('NO_FIELDS_TO_UPDATE')
 
-	const res = await query<SubjectDatabaseType>(`UPDATE subjects SET ${fields.join(', ')}, updated_at = $2 WHERE id = $1 RETURNING *`, values, client)
+	const res = await query<SubjectDatabaseType>(`UPDATE subjects SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *`, values, client)
 	if (res.rowCount === 0) throw new HttpErrorNotFound('SUBJECT_NOT_FOUND')
 
 	return subjectMapper(res.rows[0])

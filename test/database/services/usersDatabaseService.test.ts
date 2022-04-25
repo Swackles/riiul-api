@@ -146,7 +146,7 @@ describe('deleteUser', () => {
 	})
 
 	it('should delete the user', async () => {
-		expect(usersDatabaseService.deleteUser(id)).resolves
+		await expect(usersDatabaseService.deleteUser(id)).resolves
 	})
 
 	it('should throw not found error if user isn\'t found', async () => {
