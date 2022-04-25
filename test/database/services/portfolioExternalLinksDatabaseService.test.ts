@@ -27,9 +27,9 @@ beforeEach(async () => {
 	portfoliosIds = portfolios.map(x => x.id)
 
 	const externalLinksData = [
-		faker.random.word(), 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', PORTFOLIO_EXTERNAL_LINK.YOUTUBE, portfoliosIds[0],
-		faker.random.word(), faker.internet.url(), PORTFOLIO_EXTERNAL_LINK.EXTERNAL, portfoliosIds[0],
-		faker.random.word(), faker.internet.url(), PORTFOLIO_EXTERNAL_LINK.EXTERNAL, portfoliosIds[1]
+		faker.random.word().substring(0, 16), 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', PORTFOLIO_EXTERNAL_LINK.YOUTUBE, portfoliosIds[0],
+		faker.random.word().substring(0, 16), faker.internet.url(), PORTFOLIO_EXTERNAL_LINK.EXTERNAL, portfoliosIds[0],
+		faker.random.word().substring(0, 16), faker.internet.url(), PORTFOLIO_EXTERNAL_LINK.EXTERNAL, portfoliosIds[1]
 	]
 
 	const { rows: externalLinksDatabase } = await query<PortfolioExternalLinkDatabaseType>(

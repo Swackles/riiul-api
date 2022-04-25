@@ -215,7 +215,6 @@ describe('updateFile', () => {
 	})
 
 	it('should update the file', async () => {
-		const now = DateTime.now()
 		const res = await filesDatabaseService.updateFile(id, 1, client)
 
 		expect(res).not.toBeNull()
@@ -226,8 +225,6 @@ describe('updateFile', () => {
 			extension: data[2],
 			originalName: data[3]
 		})
-
-		expect(res.updatedAt.toMillis()).toBeGreaterThanOrEqual(now.toMillis())
 	})
 
 	it('should throw not found error if file isn\'t found', async () => {

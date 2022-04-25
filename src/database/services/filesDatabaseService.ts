@@ -41,8 +41,8 @@ async function deleteFile(id: number, client?: PoolClient): Promise<void> {
 }
 
 async function updateFile(id: number, order: number, client: PoolClient): Promise<File> {
-	const res = await query<FileDatabaseType>('UPDATE files SET portfolio_order = $3, updated_at = $2 WHERE id = $1 RETURNING *',
-		[id, new Date().toISOString(), order],
+	const res = await query<FileDatabaseType>('UPDATE files SET portfolio_order = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
+		[id, order],
 		client)
 
 	if (res.rowCount === 0) throw new HttpErrorNotFound('FILE_NOT_FOUND')

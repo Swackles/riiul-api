@@ -10,10 +10,10 @@ let tags: SubjectDatabaseType[]
 let portfolios: PortfolioDatabaseType[]
 
 const tagRawData = [
-	[faker.random.word() + '_1'],
-	[faker.random.word() + '_2'],
-	[faker.random.word() + '_3'],
-	[faker.random.word() + '_4'],
+	[faker.random.word().substring(0, 16) + '_1'],
+	[faker.random.word().substring(0, 16) + '_2'],
+	[faker.random.word().substring(0, 16) + '_3'],
+	[faker.random.word().substring(0, 16) + '_4'],
 ]
 
 beforeAll(async () => {

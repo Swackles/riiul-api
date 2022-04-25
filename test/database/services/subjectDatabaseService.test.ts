@@ -3,7 +3,6 @@ import {begin, query, rollback} from '../../../src/database/services/databaseSer
 import SubjectDatabaseType from '../../../src/database/types/SubjectDatabaseType'
 import SubjectUpdateBody from '../../../src/types/SubjectUpdateBody'
 import {PoolClient} from 'pg'
-import {DateTime} from 'luxon'
 
 let client: PoolClient
 
@@ -55,15 +54,12 @@ describe('saveSubject', () => {
 
 describe('updateSubject', () => {
 	it('should update a subject', async () => {
-		const now = DateTime.now()
-
 		await subjectDatabaseService.updateSubject(1, { name: 'UPDATE_SUBJECT_1', active: true }, client)
 
 		const subject = await query<SubjectDatabaseType>('SELECT * FROM subjects WHERE id = $1', [1], client)
 
 		expect(subject).toBeDefined()
 
-		expect(DateTime.fromJSDate(subject.rows[0].updated_at).toMillis()).toBeGreaterThanOrEqual(now.toMillis())
 		expect(subject.rows[0]).toMatchObject({ id: 1, name: 'UPDATE_SUBJECT_1', active: true })
 	})
 
