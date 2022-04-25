@@ -72,6 +72,8 @@ app.use((err: HttpError, req: Request, res: Response, _next: NextFunction) => {
 	res.status(err.status).send(err.getJson())
 })
 
-app.listen(process.env.NODE_ENV === 'test' ? 0 : process.env.PORT || 8080)
+if (process.env.NODE_ENV !== 'test') {
+	app.listen(process.env.PORT || 8080)
+}
 
 export default app
