@@ -4,8 +4,8 @@ type FileDatabaseType = BaseType & {
 	name: string
 	extension: string
 	original_name: string
-	portfolio_order: number
-	portfolio_id: number
+	work_order: number
+	work_id: number
 	type: string
 }
 

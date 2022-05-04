@@ -16,10 +16,10 @@ async function findWithNameAndExtension(name: string, extension: string, client?
 	return fileMapper(res.rows[0])
 }
 
-async function findWithPortfoliosId(portfoliosId: number[], client?: PoolClient): Promise<File[]> {
+async function findWithWorksId(workIds: number[], client?: PoolClient): Promise<File[]> {
 	const res = await query<FileDatabaseType>(
-		'SELECT * FROM files WHERE portfolio_id = ANY($1::int[]) ORDER BY portfolio_order',
-		[portfoliosId],
+		'SELECT * FROM files WHERE work_id = ANY($1::int[]) ORDER BY work_order',
+		[workIds],
 		client
 	)
 
@@ -28,8 +28,8 @@ async function findWithPortfoliosId(portfoliosId: number[], client?: PoolClient)
 
 async function save(file: SaveFileType, client?: PoolClient): Promise<File> {
 	const res = await query<FileDatabaseType>(
-		'INSERT INTO files (name, extension, original_name, portfolio_id, portfolio_order, type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-		[file.name, file.extension, file.originalName, file.portfolioId, file.portfolioOrder, file.type],
+		'INSERT INTO files (name, extension, original_name, work_id, work_order, type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+		[file.name, file.extension, file.originalName, file.workId, file.workOrder, file.type],
 		client)
 
 	return fileMapper(res.rows[0])
@@ -41,7 +41,7 @@ async function deleteFile(id: number, client?: PoolClient): Promise<void> {
 }
 
 async function updateFile(id: number, order: number, client: PoolClient): Promise<File> {
-	const res = await query<FileDatabaseType>('UPDATE files SET portfolio_order = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
+	const res = await query<FileDatabaseType>('UPDATE files SET work_order = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
 		[id, order],
 		client)
 
@@ -52,7 +52,7 @@ async function updateFile(id: number, order: number, client: PoolClient): Promis
 
 export default {
 	findWithNameAndExtension,
-	findWithPortfoliosId,
+	findWithWorksId,
 	deleteFile,
 	updateFile,
 	save

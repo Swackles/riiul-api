@@ -9,13 +9,13 @@ function fileMapper(databaseFile?: FileDatabaseType): File | null {
 	delete file.created_at
 	delete file.updated_at
 	delete file.original_name
-	delete file.portfolio_id
-	delete file.portfolio_order
+	delete file.work_id
+	delete file.work_order
 
 	return {
 		...file,
-		portfolioId: databaseFile.portfolio_id,
-		portfolioOrder: databaseFile.portfolio_order,
+		workId: databaseFile.work_id,
+		workOrder: databaseFile.work_order,
 		originalName: databaseFile.original_name,
 		createdAt: DateTime.fromJSDate(databaseFile.created_at),
 		updatedAt: DateTime.fromJSDate(databaseFile.updated_at)

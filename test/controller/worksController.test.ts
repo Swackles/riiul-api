@@ -7,16 +7,16 @@ import SubjectDatabaseType from '../../src/database/types/SubjectDatabaseType'
 import tagDatabaseService from '../../src/database/services/tagDatabaseService'
 import authorDatabaseService from '../../src/database/services/authorDatabaseService'
 import {PoolClient} from 'pg'
-import PORTFOLIO_EXTERNAL_LINK from '../../src/enums/PORTFOLIO_EXTERNAL_LINK'
-import portfolioExternalLinksDatabaseService from '../../src/database/services/portfolioExternalLinksDatabaseService'
+import WORK_EXTERNAL_LINK from '../../src/enums/WORK_EXTERNAL_LINK'
+import workExternalLinksDatabaseService from '../../src/database/services/workExternalLinksDatabaseService'
 
-describe('find one portfolio', () => {
+describe('find one work', () => {
 	let client: PoolClient
 
-	const ALL_PORTFOLIOS = [
+	const ALL_WORKS = [
 		{
 			title: faker.random.word(),
-			specialityId: 2,
+			subjectId: 2,
 			description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at',
 			priority: false,
 			active: true,
@@ -26,13 +26,13 @@ describe('find one portfolio', () => {
 				{
 					title: faker.random.word(),
 					link: faker.internet.url(),
-					type: PORTFOLIO_EXTERNAL_LINK.EXTERNAL
+					type: WORK_EXTERNAL_LINK.EXTERNAL
 				}
 			]
 		},
 		{
 			title: faker.random.word(),
-			specialityId: 3,
+			subjectId: 3,
 			description: 'Title2Lorem ipsum dolor sit amet, consectetur adipisTitle2cing elit. Phasellus at',
 			priority: false,
 			active: false,
@@ -42,18 +42,18 @@ describe('find one portfolio', () => {
 				{
 					title: faker.random.word(),
 					link: faker.internet.url(),
-					type: PORTFOLIO_EXTERNAL_LINK.EXTERNAL
+					type: WORK_EXTERNAL_LINK.EXTERNAL
 				},
 				{
 					title: faker.random.word(),
 					link: faker.internet.url(),
-					type: PORTFOLIO_EXTERNAL_LINK.YOUTUBE
+					type: WORK_EXTERNAL_LINK.YOUTUBE
 				}
 			]
 		},
 		{
 			title: faker.random.words(2),
-			specialityId: 3,
+			subjectId: 3,
 			description: 'Title2Lorem ipsum dolor sit amet, consectetur adipisTitle2cing elit. Phasellus at',
 			priority: false,
 			active: false,
@@ -63,13 +63,13 @@ describe('find one portfolio', () => {
 				{
 					title: faker.random.word(),
 					link: faker.internet.url(),
-					type: PORTFOLIO_EXTERNAL_LINK.EXTERNAL
+					type: WORK_EXTERNAL_LINK.EXTERNAL
 				}
 			]
 		}
 	]
 
-	const portfolioIds: number[] = []
+	const workIds: number[] = []
 	const tagIds: number[] = []
 	const authorIds: number[] = []
 	const externalLinkIds: number[] = []
@@ -78,14 +78,14 @@ describe('find one portfolio', () => {
 		try {
 			client = await begin()
 
-			for (const portfolio of ALL_PORTFOLIOS) {
-				const {title, specialityId, description, priority, active, tags, authors, externalLinks} = portfolio
+			for (const work of ALL_WORKS) {
+				const {title, subjectId, description, priority, active, tags, authors, externalLinks} = work
 				const { rows } = await query<SubjectDatabaseType>(
-					'INSERT INTO portfolios (title, subject_id, description, priority, active) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-					[title, specialityId, description, priority, active],
+					'INSERT INTO works (title, subject_id, description, priority, active) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+					[title, subjectId, description, priority, active],
 					client)
 
-				portfolioIds.push(rows[0].id)
+				workIds.push(rows[0].id)
 
 				for (const tag of tags) {
 					const {id} = await tagDatabaseService.saveTag(tag, rows[0].id, client)
@@ -96,7 +96,7 @@ describe('find one portfolio', () => {
 					authorIds.push(id)
 				}
 				for (const externalLink of externalLinks) {
-					const {id} = await portfolioExternalLinksDatabaseService.savePortfolioExternalLink(rows[0].id, externalLink, client)
+					const {id} = await workExternalLinksDatabaseService.saveWorkExternalLink(rows[0].id, externalLink, client)
 					externalLinkIds.push(id)
 				}
 			}
@@ -109,60 +109,60 @@ describe('find one portfolio', () => {
 	})
 
 	afterAll(async () => {
-		await query(`DELETE FROM portfolios WHERE id IN (${portfolioIds.join(', ')})`, [])
+		await query(`DELETE FROM works WHERE id IN (${workIds.join(', ')})`, [])
 		await query(`DELETE FROM tags WHERE id IN (${tagIds.join(', ')})`, [])
 		await query(`DELETE FROM authors WHERE id IN (${authorIds.join(', ')})`, [])
-		await query(`DELETE FROM portfolio_external_links WHERE id IN (${externalLinkIds.join(', ')})`, [])
+		await query(`DELETE FROM work_external_links WHERE id IN (${externalLinkIds.join(', ')})`, [])
 	})
 
-	it('should return 200 when looking for active portfolio, while logged in', async () => {
+	it('should return 200 when looking for active work, while logged in', async () => {
 		const response = await request(app)
-			.get(`/portfolios/${ALL_PORTFOLIOS[1].title}`)
+			.get(`/works/${ALL_WORKS[1].title}`)
 			.set('Authorization', generateJwtToken(1))
 
 		expect(response.statusCode).toBe(200)
-		expect(response.body).toMatchObject(ALL_PORTFOLIOS[1])
+		expect(response.body).toMatchObject(ALL_WORKS[1])
 	})
 
-	it('should return 200 when looking for private portfolio, while logged in', async () => {
+	it('should return 200 when looking for private work, while logged in', async () => {
 		const response = await request(app)
-			.get(`/portfolios/${ALL_PORTFOLIOS[1].title}`)
+			.get(`/works/${ALL_WORKS[1].title}`)
 			.set('Authorization', generateJwtToken(1))
 
 		expect(response.statusCode).toBe(200)
-		expect(response.body).toMatchObject(ALL_PORTFOLIOS[1])
+		expect(response.body).toMatchObject(ALL_WORKS[1])
 	})
 
-	it('should return 200 when looking for a active portfolio while not logged in', async () => {
+	it('should return 200 when looking for a active work while not logged in', async () => {
 		const response = await request(app)
-			.get(`/portfolios/${ALL_PORTFOLIOS[0].title}`)
+			.get(`/works/${ALL_WORKS[0].title}`)
 
-		delete ALL_PORTFOLIOS[0].active
+		delete ALL_WORKS[0].active
 
 		expect(response.statusCode).toBe(200)
-		expect(response.body).toMatchObject(ALL_PORTFOLIOS[0])
+		expect(response.body).toMatchObject(ALL_WORKS[0])
 	})
 
-	it('should return 404 when looking for a private portfolio while not logged in', async () => {
+	it('should return 404 when looking for a private work while not logged in', async () => {
 		const response = await request(app)
-			.get(`/portfolios/${ALL_PORTFOLIOS[1].title}`)
+			.get(`/works/${ALL_WORKS[1].title}`)
 
 		expect(response.statusCode).toBe(404)
 		expect(response.body).toStrictEqual({
 			status: 404,
-			message: 'PORTFOLIO_NOT_FOUND'
+			message: 'WORK_NOT_FOUND'
 		})
 	})
 
-	it('should respond with 404 error when portfolio doesn\'t exist', async () => {
+	it('should respond with 404 error when work doesn\'t exist', async () => {
 		const response = await request(app)
-			.get('/portfolios/not-existing-portfolio')
+			.get('/works/not-existing-work')
 			.set('Authorization', generateJwtToken(1))
 
 		expect(response.statusCode).toBe(404)
 		expect(response.body).toStrictEqual({
 			status: 404,
-			message: 'PORTFOLIO_NOT_FOUND'
+			message: 'WORK_NOT_FOUND'
 		})
 	})
 })

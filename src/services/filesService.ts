@@ -20,7 +20,7 @@ export async function updateFileOrder(id: number, order: number, client: PoolCli
 	return await filesDatabaseService.updateFile(id, order, client)
 }
 
-export async function saveFile(filename: string, data: string, portfolio: { id: number, order: number }, client: PoolClient): Promise<File> {
+export async function saveFile(filename: string, data: string, work: { id: number, order: number }, client: PoolClient): Promise<File> {
 	const originalName = filename.split('.')[0]
 	const extension = filename.split('.').pop()
 	const type = extension === 'pdf' ? 'PDF' : 'IMG'
@@ -29,8 +29,8 @@ export async function saveFile(filename: string, data: string, portfolio: { id: 
 		name: `${DateTime.now().toMillis()}-${originalName}`,
 		originalName,
 		extension,
-		portfolioOrder: portfolio.order,
-		portfolioId: portfolio.id,
+		workOrder: work.order,
+		workId: work.id,
 		type,
 	}
 

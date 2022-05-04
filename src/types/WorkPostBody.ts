@@ -1,11 +1,11 @@
-import PortfolioExternalLinkSave from './PortfolioExternalLinkSave'
+import WorkExternalLinkSave from './WorkExternalLinkSave'
 
 export type Files = {
 	name: string
 	contents: string
 }
 
-type PortfolioPostBody = {
+type WorkPostBody = {
 	subjectId: number
 	title: string
 	description: string
@@ -14,9 +14,9 @@ type PortfolioPostBody = {
 	priority: boolean,
 	active: boolean,
 	graduationYear?: number,
-	externalLinks: PortfolioExternalLinkSave[],
+	externalLinks: WorkExternalLinkSave[],
 	images: Files[]
 	files?: Files[]
 }
 
-export default PortfolioPostBody
+export default WorkPostBody

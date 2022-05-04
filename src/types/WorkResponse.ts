@@ -1,17 +1,17 @@
-import PortfolioExternalLink from './PortfolioExternalLink'
+import WorkExternalLink from './WorkExternalLink'
 
-type PortfolioResponse = {
+type WorkResponse = {
 	id: number
 	title: string
 	description: string
-	specialityId: number
+	subjectId: number
 	tags: string[]
 	authors: string[]
 	priority: boolean
 	active: boolean
-	externalLinks: PortfolioExternalLink[]
+	externalLinks: WorkExternalLink[]
 	images: string[] | {id: number, name: string}[]
 	files: string[] | {id: number, name: string}[]
 }
 
-export default  PortfolioResponse
+export default  WorkResponse

@@ -1,9 +1,9 @@
-import PortfolioQueryType from '../types/PortfolioQueryType'
+import WorkQueryType from '../types/WorkQueryType'
 
-function generateConditionQuery(query: PortfolioQueryType): { condition: string, data: (string|number|boolean)[]} {
+function generateConditionQuery(query: WorkQueryType): { condition: string, data: (string|number|boolean)[]} {
 	if (!query) return { condition: '', data: [] }
 
-	const {q, specialities, active, authors, tags} = query
+	const {q, subjects, active, authors, tags} = query
 	const condition = []
 	const data = []
 
@@ -18,8 +18,8 @@ function generateConditionQuery(query: PortfolioQueryType): { condition: string,
 		return res
 	}
 
-	if (specialities && specialities.length) {
-		condition.push(`subjects.name IN (${generateConditionFromArray(specialities).join(', ')})`)
+	if (subjects && subjects.length) {
+		condition.push(`subjects.name IN (${generateConditionFromArray(subjects).join(', ')})`)
 	}
 	if (authors && authors.length) {
 		condition.push(`authors.name IN (${generateConditionFromArray(authors).join(', ')})`)
@@ -37,10 +37,10 @@ function generateConditionQuery(query: PortfolioQueryType): { condition: string,
 		data.push(active)
 
 		if (active) {
-			condition.push('(portfolios.active = <<__data__>> AND subjects.active = <<__data__>>)'
+			condition.push('(works.active = <<__data__>> AND subjects.active = <<__data__>>)'
 				.replace(/<<__data__>>/g, `$${data.length}`))
 		} else {
-			condition.push('(portfolios.active = <<__data__>> OR subjects.active = <<__data__>>)'
+			condition.push('(works.active = <<__data__>> OR subjects.active = <<__data__>>)'
 				.replace(/<<__data__>>/g, `$${data.length}`))
 		}
 	}

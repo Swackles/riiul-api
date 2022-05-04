@@ -1,12 +1,12 @@
-import PortfolioListResponse from '../types/PortfolioListResponse'
+import WorkListResponse from '../types/WorkListResponse'
 import asyncHandler from 'express-async-handler'
-import {getPreviewPortfolios} from '../services/portfoliosService'
+import {getPreviewWorks} from '../services/worksService'
 import express from 'express'
 
 const router = express.Router()
 
-router.get<never, Record<number, PortfolioListResponse[]>>('/', asyncHandler(async (req, res) => {
-	res.status(200).send(await getPreviewPortfolios())
+router.get<never, Record<number, WorkListResponse[]>>('/', asyncHandler(async (req, res) => {
+	res.status(200).send(await getPreviewWorks())
 }))
 
 export default router

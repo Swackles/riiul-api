@@ -5,9 +5,9 @@ import cookieParser from 'cookie-parser'
 import authenticateController from './controller/authenticateController'
 import usersController from './controller/usersController'
 import cors from 'cors'
-import specialitiesController from './controller/subjectsController'
+import subjectsController from './controller/subjectsController'
 import filesController from './controller/filesController'
-import portfoliosController from './controller/portfoliosController'
+import worksController from './controller/worksController'
 import Rollbar from 'rollbar'
 import HttpError from './errors/HttpError'
 import HttpErrorBadRequest from './errors/HttpErrorBadRequest'
@@ -40,9 +40,9 @@ app.use((_req: Request, res: Response, next: NextFunction) => {
 
 app.use('/authenticate', authenticateController)
 app.use('/files', filesController)
-app.use('/subjects', specialitiesController)
+app.use('/subjects', subjectsController)
 app.use('/users', usersController)
-app.use('/portfolios', portfoliosController)
+app.use('/works', worksController)
 app.use('/tags', tagsController)
 app.use('/authors', authorsController)
 app.use('/homepage', dashboardController)

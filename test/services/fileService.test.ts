@@ -36,7 +36,7 @@ describe('saveFile', () => {
 	beforeAll(async () => {
 		client = await begin()
 
-		const res = await query<{id: number}>(`INSERT INTO portfolios (subject_id, title, description, priority, active) VALUES
+		const res = await query<{id: number}>(`INSERT INTO works (subject_id, title, description, priority, active) VALUES
 				($1, $2, $3, $4, $5) RETURNING id`,
 		[1, faker.random.word(), faker.random.word(), 'false', 'true'], client)
 

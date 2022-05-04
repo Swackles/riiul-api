@@ -1,6 +1,6 @@
 import BaseType from './BaseType'
 
-type PortfolioDatabaseType = BaseType & {
+type WorkDatabaseType = BaseType & {
 	subject_id: number
 	title: string
 	description: string
@@ -9,4 +9,4 @@ type PortfolioDatabaseType = BaseType & {
 	graduation_year?: number
 }
 
-export default PortfolioDatabaseType
+export default WorkDatabaseType

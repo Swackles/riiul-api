@@ -12,10 +12,10 @@ async function allAuthors(client?: PoolClient): Promise<Author[]> {
 
 async function allAuthorsPublic(client?: PoolClient): Promise<Author[]> {
 	const res = await query<AuthorDatabaseType>(
-		`SELECT DISTINCT a.id, a.name, a.updated_at, a.created_at FROM authors_in_portfolio as aip
-			RIGHT JOIN portfolios as p ON p.id = aip.portfolio_id
+		`SELECT DISTINCT a.id, a.name, a.updated_at, a.created_at FROM authors_in_work as aip
+			RIGHT JOIN works as w ON w.id = aip.work_id
 			RIGHT JOIN authors a on a.id = aip.author_id
-			WHERE p.active = true
+			WHERE w.active = true
 			ORDER BY a.id desc`,
 		[],
 		client)
@@ -23,19 +23,19 @@ async function allAuthorsPublic(client?: PoolClient): Promise<Author[]> {
 	return res.rows.map(authorMapper)
 }
 
-async function findWithPortfolioId(portfoliosId: number, client?: PoolClient): Promise<Author[]> {
+async function findWithWorkId(workId: number, client?: PoolClient): Promise<Author[]> {
 	const res = await query<AuthorDatabaseType>(
-		`SELECT a.* FROM authors_in_portfolio as aip
-			RIGHT JOIN authors a on aip.author_id = a.id
-			WHERE aip.portfolio_id = $1`,
-		[portfoliosId],
+		`SELECT a.* FROM authors_in_work as aiw
+			RIGHT JOIN authors a on aiw.author_id = a.id
+			WHERE aiw.work_id = $1`,
+		[workId],
 		client
 	)
 
 	return res.rows.map(authorMapper)
 }
 
-async function saveAuthor(authorName: string, portfolioId: number, client?: PoolClient): Promise<Author> {
+async function saveAuthor(authorName: string, workId: number, client?: PoolClient): Promise<Author> {
 	const { rows: authors } = await query<AuthorDatabaseType>(
 		`INSERT INTO authors (name) VALUES ($1)
 			ON CONFLICT ON CONSTRAINT authors_name_key
@@ -45,21 +45,21 @@ async function saveAuthor(authorName: string, portfolioId: number, client?: Pool
 	)
 
 	await query(
-		`INSERT INTO authors_in_portfolio (portfolio_id, author_id) VALUES ($1, $2)
-		ON CONFLICT ON CONSTRAINT authors_in_portfolio_uniq_portfolio_id_author_id
+		`INSERT INTO authors_in_work (work_id, author_id) VALUES ($1, $2)
+		ON CONFLICT ON CONSTRAINT authors_in_work_uniq_work_id_author_id
 		DO NOTHING`,
-		[portfolioId, authors[0].id],
+		[workId, authors[0].id],
 		client)
 
 	return authorMapper(authors[0])
 }
 
-async function removeAuthorFromPortfolio(name: string, portfolioId: number, client?: PoolClient): Promise<void> {
+async function removeAuthorFromWork(name: string, workId: number, client?: PoolClient): Promise<void> {
 	await query(
-		`DELETE FROM authors_in_portfolio WHERE portfolio_id = $1 AND author_id = (
+		`DELETE FROM authors_in_work WHERE work_id = $1 AND author_id = (
 			SELECT id FROM tags WHERE name = $2
 		)`,
-		[portfolioId, name],
+		[workId, name],
 		client
 	)
 }
@@ -67,7 +67,7 @@ async function removeAuthorFromPortfolio(name: string, portfolioId: number, clie
 export default {
 	allAuthors,
 	allAuthorsPublic,
-	findWithPortfolioId,
+	findWithWorkId,
 	saveAuthor,
-	removeAuthorFromPortfolio
+	removeAuthorFromWork
 }

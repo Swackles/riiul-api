@@ -1,8 +1,8 @@
 import {DateTime} from 'luxon'
 
-type Portfolio = {
+type Work = {
 	id: number
-	specialityId: number
+	subjectId: number
 	title: string
 	description: string
 	tags?: string[]
@@ -14,4 +14,4 @@ type Portfolio = {
 	graduationYear?: number
 }
 
-export default Portfolio
+export default Work

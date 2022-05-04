@@ -12,10 +12,10 @@ async function allTags(client?: PoolClient): Promise<Tag[]> {
 
 async function allTagsPublic(client?: PoolClient): Promise<Tag[]> {
 	const res = await query<TagDatabaseType>(
-		`SELECT DISTINCT t.id, t.name, t.updated_at, t.created_at FROM tags_in_portfolio as tip
-			RIGHT JOIN portfolios as p ON p.id = tip.portfolio_id
+		`SELECT DISTINCT t.id, t.name, t.updated_at, t.created_at FROM tags_in_work as tip
+			RIGHT JOIN works as w ON w.id = tip.work_id
 			RIGHT JOIN tags t on t.id = tip.tag_id
-			WHERE p.active = true
+			WHERE w.active = true
 			ORDER BY t.id desc`,
 		[],
 		client)
@@ -23,19 +23,19 @@ async function allTagsPublic(client?: PoolClient): Promise<Tag[]> {
 	return res.rows.map(tagMapper)
 }
 
-async function findWithPortfolioId(portfoliosId: number, client?: PoolClient): Promise<Tag[]> {
+async function findWithWorkId(workId: number, client?: PoolClient): Promise<Tag[]> {
 	const res = await query<TagDatabaseType>(
-		`SELECT t.* FROM tags_in_portfolio as tip
-			RIGHT JOIN tags t on tip.tag_id = t.id
-			WHERE tip.portfolio_id = $1`,
-		[portfoliosId],
+		`SELECT t.* FROM tags_in_work as tiw
+			RIGHT JOIN tags t on tiw.tag_id = t.id
+			WHERE tiw.work_id = $1`,
+		[workId],
 		client
 	)
 
 	return res.rows.map(tagMapper)
 }
 
-async function saveTag(tagName: string, portfolioId: number, client?: PoolClient): Promise<Tag> {
+async function saveTag(tagName: string, workId: number, client?: PoolClient): Promise<Tag> {
 	const { rows: tags } = await query<TagDatabaseType>(
 		`INSERT INTO tags (name) VALUES ($1)
 			ON CONFLICT ON CONSTRAINT tags_name_key
@@ -45,21 +45,21 @@ async function saveTag(tagName: string, portfolioId: number, client?: PoolClient
 	)
 
 	await query(
-		`INSERT INTO tags_in_portfolio (portfolio_id, tag_id) VALUES ($1, $2)
-		ON CONFLICT ON CONSTRAINT tags_in_portfolio_uniq_portfolio_id_tag_id
+		`INSERT INTO tags_in_work (work_id, tag_id) VALUES ($1, $2)
+		ON CONFLICT ON CONSTRAINT tags_in_work_uniq_work_id_tag_id
 		DO NOTHING`,
-		[portfolioId, tags[0].id],
+		[workId, tags[0].id],
 		client)
 
 	return tagMapper(tags[0])
 }
 
-async function removeTagFromPortfolio(name: string, portfolioId: number, client?: PoolClient): Promise<void> {
+async function removeTagFromWork(name: string, workId: number, client?: PoolClient): Promise<void> {
 	await query(
-		`DELETE FROM tags_in_portfolio WHERE portfolio_id = $1 AND tag_id = (
+		`DELETE FROM tags_in_work WHERE work_id = $1 AND tag_id = (
 			SELECT id FROM tags WHERE name = $2
 		)`,
-		[portfolioId, name],
+		[workId, name],
 		client
 	)
 }
@@ -67,7 +67,7 @@ async function removeTagFromPortfolio(name: string, portfolioId: number, client?
 export default {
 	allTags,
 	allTagsPublic,
-	findWithPortfolioId,
+	findWithWorkId,
 	saveTag,
-	removeTagFromPortfolio
+	removeTagFromWork
 }

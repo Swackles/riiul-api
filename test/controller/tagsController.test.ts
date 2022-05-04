@@ -4,10 +4,10 @@ import {generateJwtToken} from '../../src/services/authenticateService'
 import { query} from '../../src/database/services/databaseService'
 import SubjectDatabaseType from '../../src/database/types/SubjectDatabaseType'
 import faker from 'faker'
-import PortfolioDatabaseType from '../../src/database/types/PortfolioDatabaseType'
+import WorkDatabaseType from '../../src/database/types/WorkDatabaseType'
 
 let tags: SubjectDatabaseType[]
-let portfolios: PortfolioDatabaseType[]
+let works: WorkDatabaseType[]
 
 const tagRawData = [
 	[faker.random.word().substring(0, 16) + '_1'],
@@ -25,29 +25,29 @@ beforeAll(async () => {
 		return res.rows[0]
 	}))
 
-	const portfolioRawData = [
+	const workRawData = [
 		[1, faker.random.word(), faker.random.word(), 'false', 'true'],
 		[1, faker.random.word(), faker.random.word(), 'false', 'false'],
 		[1, faker.random.word(), faker.random.word(), 'false', 'true']
 	]
 
-	portfolios = await Promise.all(portfolioRawData.map(async (data) => {
-		const res = await query<PortfolioDatabaseType>(
-			'INSERT INTO portfolios (subject_id, title, description, priority, active) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+	works = await Promise.all(workRawData.map(async (data) => {
+		const res = await query<WorkDatabaseType>(
+			'INSERT INTO works (subject_id, title, description, priority, active) VALUES ($1, $2, $3, $4, $5) RETURNING *',
 			data)
 
 		return res.rows[0]
 	}))
 
 	const refData = [
-		[tags[0].id, portfolios[0].id],
-		[tags[2].id, portfolios[0].id],
-		[tags[0].id, portfolios[2].id],
-		[tags[3].id, portfolios[1].id],
+		[tags[0].id, works[0].id],
+		[tags[2].id, works[0].id],
+		[tags[0].id, works[2].id],
+		[tags[3].id, works[1].id],
 	]
 
 	await Promise.all(refData.map(async (data) => await query(
-		'INSERT INTO tags_in_portfolio (tag_id, portfolio_id) VALUES ($1, $2) RETURNING *',
+		'INSERT INTO tags_in_work (tag_id, work_id) VALUES ($1, $2) RETURNING *',
 		data)
 	))
 })
@@ -59,8 +59,8 @@ afterAll(async () => {
 	)
 
 	await query(
-		'DELETE FROM portfolios where id = ANY($1::int[])',
-		[portfolios.map(portfolio => portfolio.id)]
+		'DELETE FROM works where id = ANY($1::int[])',
+		[works.map(work => work.id)]
 	)
 })
 

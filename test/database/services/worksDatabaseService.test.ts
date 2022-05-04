@@ -1,13 +1,13 @@
 import {PoolClient} from 'pg'
 import {begin, query, rollback} from '../../../src/database/services/databaseService'
 import SubjectDatabaseType from '../../../src/database/types/SubjectDatabaseType'
-import portfoliosDatabaseService from '../../../src/database/services/portfoliosDatabaseService'
+import worksDatabaseService from '../../../src/database/services/worksDatabaseService'
 import tagDatabaseService from '../../../src/database/services/tagDatabaseService'
 import authorDatabaseService from '../../../src/database/services/authorDatabaseService'
 
 let client: PoolClient
 
-const ALL_PORTFOLIOS = [
+const ALL_WORKS = [
 	{
 		title: 'Title1',
 		subjectId: 2,
@@ -58,10 +58,10 @@ const ALL_PORTFOLIOS = [
 beforeAll(async () => {
 	client = await begin()
 
-	await Promise.all(ALL_PORTFOLIOS.map(
+	await Promise.all(ALL_WORKS.map(
 		async ({title, subjectId, description, priority, active, tags, authors}) => {
 			const { rows } = await query<SubjectDatabaseType>(
-				'INSERT INTO portfolios (title, subject_id, description, priority, active) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+				'INSERT INTO works (title, subject_id, description, priority, active) VALUES ($1, $2, $3, $4, $5) RETURNING *',
 				[title, subjectId, description, priority, active],
 				client)
 
@@ -79,14 +79,14 @@ afterAll(async () => {
 	await rollback(client)
 })
 
-describe('findPortfolioWithTitle', () => {
+describe('findWorkWithTitle', () => {
 	it('should return user when searching for an active user', async () => {
 
-		const res = await portfoliosDatabaseService.findPortfolioWithTitle('Title1', client)
+		const res = await worksDatabaseService.findWorkWithTitle('Title1', client)
 
 		expect(res).toMatchObject({
 			title: 'Title1',
-			specialityId: 2,
+			subjectId: 2,
 			description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at',
 			priority: false,
 			active: true
@@ -95,11 +95,11 @@ describe('findPortfolioWithTitle', () => {
 
 	it('should return user when searching for an inactive user', async () => {
 
-		const res = await portfoliosDatabaseService.findPortfolioWithTitle('Title2', client)
+		const res = await worksDatabaseService.findWorkWithTitle('Title2', client)
 
 		expect(res).toMatchObject({
 			title: 'Title2',
-			specialityId: 3,
+			subjectId: 3,
 			description: 'Title2Lorem ipsum dolor sit amet, consectetur adipisTitle2cing elit. Phasellus at',
 			priority: false,
 			active: false
@@ -107,14 +107,14 @@ describe('findPortfolioWithTitle', () => {
 	})
 })
 
-describe('findPortfolioPublicWithTitle', () => {
+describe('findWorkPublicWithTitle', () => {
 	it('should return user when searching for an active user', async () => {
 
-		const res = await portfoliosDatabaseService.findPortfolioPublicWithTitle('Title1', client)
+		const res = await worksDatabaseService.findWorkPublicWithTitle('Title1', client)
 
 		expect(res).toMatchObject({
 			title: 'Title1',
-			specialityId: 2,
+			subjectId: 2,
 			description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at',
 			priority: false,
 			active: true
@@ -123,77 +123,77 @@ describe('findPortfolioPublicWithTitle', () => {
 
 	it('should not return user when searching for an inactive user', async () => {
 
-		await expect(portfoliosDatabaseService.findPortfolioPublicWithTitle('Title2', client))
-			.rejects.toMatchObject({ status: 404, message: 'PORTFOLIO_NOT_FOUND' })
+		await expect(worksDatabaseService.findWorkPublicWithTitle('Title2', client))
+			.rejects.toMatchObject({ status: 404, message: 'WORK_NOT_FOUND' })
 	})
 })
 
-describe('allPortfoliosPublic', () => {
-	it('should return all public portfolios', async () => {
-		const res = await portfoliosDatabaseService.allPortfoliosPublic(undefined, client)
+describe('allWorksPublic', () => {
+	it('should return all public works', async () => {
+		const res = await worksDatabaseService.allWorksPublic(undefined, client)
 
 		expect(res).toHaveLength(3)
 	})
 
-	it('should return all active portfolios if params active is set true', async () => {
-		const res = await portfoliosDatabaseService.allPortfoliosPublic({active: true}, client)
+	it('should return all active works if params active is set true', async () => {
+		const res = await worksDatabaseService.allWorksPublic({active: true}, client)
 
 		expect(res).toHaveLength(3)
 	})
 
-	it('should return all active portfolios if params active is set false', async () => {
-		const res = await portfoliosDatabaseService.allPortfoliosPublic({active: false}, client)
+	it('should return all active works if params active is set false', async () => {
+		const res = await worksDatabaseService.allWorksPublic({active: false}, client)
 
 		expect(res).toHaveLength(3)
 	})
 })
 
-describe('allPortfolios', () => {
-	it('should return all portfolios', async () => {
-		const res = await portfoliosDatabaseService.allPortfolios(undefined, client)
+describe('allWorks', () => {
+	it('should return all works', async () => {
+		const res = await worksDatabaseService.allWorks(undefined, client)
 
 		expect(res).toHaveLength(5)
 	})
 
-	it('should return all active portfolios if params active is set true', async () => {
-		const res = await portfoliosDatabaseService.allPortfolios({active: true}, client)
+	it('should return all active works if params active is set true', async () => {
+		const res = await worksDatabaseService.allWorks({active: true}, client)
 
 		expect(res).toHaveLength(3)
 	})
 
-	it('should return all not active portfolios if params active is set false', async () => {
-		const res = await portfoliosDatabaseService.allPortfolios({active: false}, client)
+	it('should return all not active works if params active is set false', async () => {
+		const res = await worksDatabaseService.allWorks({active: false}, client)
 
 		expect(res).toHaveLength(2)
 	})
 
-	it('should return all active portfolios with specialities "Rakendusinformaatika" and "Tervisejuht"', async () => {
-		const res = await portfoliosDatabaseService.allPortfolios({
+	it('should return all active works with works "Rakendusinformaatika" and "Tervisejuht"', async () => {
+		const res = await worksDatabaseService.allWorks({
 			active: true,
-			specialities: ['Rakendusinformaatika', 'Tervisejuht']
+			subjects: ['Rakendusinformaatika', 'Tervisejuht']
 		}, client)
 
 		expect(res).toHaveLength(2)
 	})
 
-	it('should return all portfolios with tags "tag1" and "tag2"', async () => {
-		const res = await portfoliosDatabaseService.allPortfolios({
+	it('should return all works with tags "tag1" and "tag2"', async () => {
+		const res = await worksDatabaseService.allWorks({
 			tags: ['tag1', 'tag2']
 		}, client)
 
 		expect(res).toHaveLength(4)
 	})
 
-	it('should return all portfolios with authors "author1" and "author2"', async () => {
-		const res = await portfoliosDatabaseService.allPortfolios({
+	it('should return all works with authors "author1" and "author2"', async () => {
+		const res = await worksDatabaseService.allWorks({
 			authors: ['author1', 'author2']
 		}, client)
 
 		expect(res).toHaveLength(4)
 	})
 
-	it('should return all portfolios with word', async () => {
-		const res = await portfoliosDatabaseService.allPortfolios({
+	it('should return all works with word', async () => {
+		const res = await worksDatabaseService.allWorks({
 			q:'Title2'
 		}, client)
 
