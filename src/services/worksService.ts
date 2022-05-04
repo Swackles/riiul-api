@@ -123,7 +123,7 @@ export async function deleteWork(id: number): Promise<void> {
 export async function addWork(work: WorkPostBody): Promise<void> {
 	const client = await begin()
 
-	const newWork = await workDatabaseService.saveWork(work, client)
+	const newWork = await workDatabaseService.saveWork({ ...work, title: work.title.trim() }, client)
 
 	await Promise.all(work.tags.map(tag => tagDatabaseService.saveTag(tag, newWork.id, client)))
 
@@ -144,6 +144,8 @@ export async function addWork(work: WorkPostBody): Promise<void> {
 
 export async function updateWork(id: number, work: WorkUpdateBody): Promise<void> {
 	const client = await begin()
+
+	if (work.title) work = { ...work, title: work.title.trim() }
 
 	await workDatabaseService.updateWork(id, work, client)
 
