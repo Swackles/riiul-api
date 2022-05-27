@@ -12,7 +12,17 @@ async function findWithWorkId(workId: number, client?: PoolClient): Promise<Work
 		client
 	)
 
-	return res.rows.map(workExternalLinksMapper)
+	return res.rows.map(x => workExternalLinksMapper(x))
+}
+
+async function findVideosWithWorkIds(workId: number[], client?: PoolClient): Promise<WorkExternalLink[]> {
+	const res = await query<WorkExternalLinkDatabaseType>(
+		'SELECT wel.* FROM work_external_links as wel WHERE wel.type = \'YOUTUBE\' AND wel.work_id = ANY($1::int[])',
+		[workId],
+		client
+	)
+
+	return res.rows.map(x => workExternalLinksMapper(x, true))
 }
 
 async function deleteWorkExternalLink(id: number, client?: PoolClient): Promise<void> {
@@ -31,6 +41,7 @@ async function saveWorkExternalLink(workId: number, {title, link, type}: WorkExt
 }
 
 export default {
+	findVideosWithWorkIds,
 	findWithWorkId,
 	deleteWorkExternalLink,
 	saveWorkExternalLink

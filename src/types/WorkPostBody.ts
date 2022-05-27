@@ -16,7 +16,8 @@ type WorkPostBody = {
 	graduationYear?: number,
 	externalLinks: WorkExternalLinkSave[],
 	images: Files[]
-	files?: Files[]
+	files?: Files[],
+	isVideoPreviewImage: boolean
 }
 
 export default WorkPostBody

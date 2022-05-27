@@ -7,6 +7,7 @@ type WorkDatabaseType = BaseType & {
 	priority: boolean
 	active: boolean
 	graduation_year?: number
+	is_video_preview_image: boolean
 }
 
 export default WorkDatabaseType

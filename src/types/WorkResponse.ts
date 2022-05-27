@@ -12,6 +12,7 @@ type WorkResponse = {
 	externalLinks: WorkExternalLink[]
 	images: string[] | {id: number, name: string}[]
 	files: string[] | {id: number, name: string}[]
+	isVideoPreviewImage: boolean
 }
 
 export default  WorkResponse

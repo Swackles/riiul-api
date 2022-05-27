@@ -76,16 +76,31 @@ export async function getWorks(user?: User, query?: WorkListQuery, client?: Pool
 		works = await workDatabaseService.allWorksPublic(dataBaseQuery, client)
 	}
 
-	const images = (await filesDatabaseService.findWithWorksId(works.map(p => p.id), client))
+	const worksWithVideoImagesIds = works.filter(w => w.isVideoPreviewImage)
+		.map(w => w.id)
+
+	const externalLinks = await workExternalLinksDatabaseService.findVideosWithWorkIds(worksWithVideoImagesIds)
+	const externalLinksWorkIds = externalLinks.map(l => l.workId)
+
+	const workIds = works.filter(w => !externalLinksWorkIds.includes(w.id))
+		.map(p => p.id)
+
+	const images = (await filesDatabaseService.findWithWorksId(workIds))
 		.filter(f => f.type === 'IMG')
 		.map(f => ({ id: f.workId, name: f.name + '.' + f.extension} ))
 
 	return works.map(p => {
+		const [, videoId] = externalLinks.find(i => i.id === p.id)
+			?.link
+			?.match('v=(.*?)($|&)') || []
+
+		const image = `https://img.youtube.com/vi/${videoId}/0.jpg`
+
 		const data: WorkListResponse = {
 			id: p.id,
 			title: p.title,
 			subjectId: p.subjectId,
-			image: images?.find(i => i.id === p.id)?.name,
+			image: videoId ? image : images?.find(i => i.id === p.id)?.name,
 		}
 		if (user) data.active = p.active
 
@@ -95,9 +110,20 @@ export async function getWorks(user?: User, query?: WorkListQuery, client?: Pool
 
 export async function getPreviewWorks(): Promise<Record<number, WorkListResponse[]>> {
 	const works = await workDatabaseService.allWorksPublic()
-	const images = (await filesDatabaseService.findWithWorksId(works.map(p => p.id)))
+
+	const worksWithVideoImagesIds = works.filter(w => w.isVideoPreviewImage)
+		.map(w => w.id)
+
+	const externalLinks = await workExternalLinksDatabaseService.findVideosWithWorkIds(worksWithVideoImagesIds)
+	const externalLinksWorkIds = externalLinks.map(l => l.workId)
+
+	const workIds = works.filter(w => !externalLinksWorkIds.includes(w.id))
+		.map(p => p.id)
+
+	const images = (await filesDatabaseService.findWithWorksId(workIds))
 		.filter(f => f.type === 'IMG')
 		.map(f => ({ id: f.workId, name: f.name + '.' + f.extension} ))
+
 	const subjects = works.map(p => p.subjectId)
 		.filter((s, i, a) => a.indexOf(s) === i)
 
@@ -105,12 +131,20 @@ export async function getPreviewWorks(): Promise<Record<number, WorkListResponse
 	for (const subjectId of subjects) {
 		res[subjectId] = works
 			.filter(p => p.subjectId === subjectId)
-			.map(p => ({
-				id: p.id,
-				title: p.title,
-				subjectId: p.subjectId,
-				image: images.find(i => i.id === p.id).name,
-			}))
+			.map(p => {
+				const [, videoId] = externalLinks.find(i => i.workId === p.id)
+					?.link
+					?.match('v=(.*?)($|&)') || []
+
+				const image = `https://img.youtube.com/vi/${videoId}/0.jpg`
+
+				return {
+					id: p.id,
+					title: p.title,
+					subjectId: p.subjectId,
+					image: videoId ? image : images.find(i => i.id === p.id).name,
+				}
+			})
 	}
 
 	return res
@@ -147,7 +181,11 @@ export async function updateWork(id: number, work: WorkUpdateBody): Promise<void
 
 	if (work.title) work = { ...work, title: work.title.trim() }
 
-	await workDatabaseService.updateWork(id, work, client)
+	try {
+		await workDatabaseService.updateWork(id, work, client)
+	} catch (e) {
+		if (e.message !== 'NO_FIELDS_TO_UPDATE') throw e
+	}
 
 	function modificationOrder(a: ModifyWorkAddons<unknown, unknown>, b: ModifyWorkAddons<unknown, unknown>): number {
 		return MODIFICATION_ORDER[a.modificationType] - MODIFICATION_ORDER[b.modificationType]

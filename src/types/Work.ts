@@ -12,6 +12,7 @@ type Work = {
 	createdAt: DateTime
 	updatedAt: DateTime
 	graduationYear?: number
+	isVideoPreviewImage: boolean
 }
 
 export default Work

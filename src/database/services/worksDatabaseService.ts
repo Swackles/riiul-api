@@ -16,7 +16,8 @@ const UPDATABLE_FIELDS = [
 	'description',
 	'priority',
 	'active',
-	'graduationYear'
+	'graduationYear',
+	'isVideoPreviewImage'
 ]
 
 async function findWorkWithTitle(title: string, client?: PoolClient): Promise<Work> {
@@ -81,10 +82,11 @@ async function saveWork(work: WorkPostBody, client: PoolClient): Promise<Work> {
 		work.description,
 		work.priority,
 		work.active,
-		work.graduationYear
+		work.graduationYear,
+		work.isVideoPreviewImage
 	]
 	const res = await query<WorkDatabaseType>('INSERT INTO works' +
-		'(subject_id, title, description, priority, active, graduation_year)' +
+		'(subject_id, title, description, priority, active, graduation_year, is_video_preview_image)' +
 		'VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', data, client)
 
 	return workMapper(res.rows[0])
